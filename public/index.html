@@ -2,13 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>TMD SMART - Advanced Lab</title>
+    <title>TMD SMART - Vật lý 11</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 20px; margin: 0; color: #1e293b; }
         .container { max-width: 1200px; margin: auto; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
         h1 { color: #1d4ed8; text-align: center; }
+        h3 { border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
         
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; }
         .login-box { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 350px;}
@@ -22,11 +23,14 @@
         .metric { margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
         .metric-title { font-size: 13px; color: #94a3b8; text-transform: uppercase; }
         .metric-value { font-size: 28px; font-weight: bold; color: #f8fafc; }
+        
         .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 16px; margin-right: 10px; }
         .btn-start { background: #10b981; }
         .btn-stop { background: #ef4444; }
         .btn-pause { background: #f59e0b; }
+        .btn-export { background: #8b5cf6; }
         .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        
         #chart-container { width: 100%; height: 350px; }
         select { padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; margin-bottom: 15px; }
         .result-box { background: #ecfdf5; border: 1px solid #10b981; padding: 20px; border-radius: 8px; font-size: 18px; margin-top: 20px; display: none;}
@@ -36,7 +40,7 @@
     <div id="login-screen">
         <div class="login-box">
             <h1>TMD SMART</h1>
-            <p>Advanced Signal Processing</p>
+            <p>Phân tích dao động - Vật lý 11</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6">
             <button onclick="joinRoom()">Vào phòng</button>
         </div>
@@ -53,34 +57,41 @@
         
         <div class="card">
             <button class="btn btn-start" id="btn-record" onclick="startRecord()">Bắt đầu ghi</button>
-            <button class="btn btn-pause" id="btn-pause" onclick="togglePause()" disabled>Tạm dừng biểu đồ</button>
+            <button class="btn btn-pause" id="btn-pause" onclick="togglePause()" disabled>Tạm dừng</button>
             <button class="btn btn-stop" id="btn-stop" onclick="stopRecord()" disabled>Dừng & Lưu</button>
-            <span style="float:right; font-weight:bold; color:#3b82f6;" id="sample-rate">Tần số lấy mẫu: 0 Hz</span>
+            <button class="btn btn-export" onclick="exportCSV()">Xuất file CSV (Excel)</button>
         </div>
 
         <div class="panels">
             <div class="physics-panel">
                 <div class="panel-title">MẶT ĐẤT (GROUND)</div>
-                <div class="metric"><div class="metric-title">Biên độ RMS</div><span class="metric-value" id="g-amp">0.000</span> m/s²</div>
-                <div class="metric"><div class="metric-title">Tần số (FFT)</div><span class="metric-value" id="g-freq">0.00</span> Hz</div>
+                <div class="metric"><div class="metric-title">Biên độ A</div><span class="metric-value" id="g-amp">0.000</span> m/s²</div>
+                <div class="metric"><div class="metric-title">Tần số f</div><span class="metric-value" id="g-freq">0.00</span> Hz</div>
+                <div class="metric"><div class="metric-title">Chu kỳ T</div><span class="metric-value" id="g-period">0.00</span> s</div>
             </div>
             <div class="physics-panel" style="border: 2px solid #ef4444;">
                 <div class="panel-title" style="color: #fca5a5;">TÒA NHÀ (BUILDING)</div>
-                <div class="metric"><div class="metric-title">Biên độ RMS</div><span class="metric-value" id="b-amp">0.000</span> m/s²</div>
-                <div class="metric"><div class="metric-title">Tần số (FFT)</div><span class="metric-value" id="b-freq">0.00</span> Hz</div>
+                <div class="metric"><div class="metric-title">Biên độ A</div><span class="metric-value" id="b-amp">0.000</span> m/s²</div>
+                <div class="metric"><div class="metric-title">Tần số f</div><span class="metric-value" id="b-freq">0.00</span> Hz</div>
+                <div class="metric"><div class="metric-title">Chu kỳ T</div><span class="metric-value" id="b-period">0.00</span> s</div>
             </div>
         </div>
 
         <div class="card"><div id="chart-container"><canvas id="liveChart"></canvas></div></div>
 
         <div class="card">
-            <h3>So sánh hiệu quả giảm chấn (Dựa trên Biên độ RMS)</h3>
+            <h3>Kiểm chứng hiệu quả của TMD</h3>
             <div style="display:flex; gap:20px;">
                 <div style="flex:1;"><label>Phiên 1 (Không TMD):</label><select id="sel-1"></select></div>
                 <div style="flex:1;"><label>Phiên 2 (Có TMD):</label><select id="sel-2"></select></div>
             </div>
-            <button class="btn btn-start" style="margin-top:15px;" onclick="compareSessions()">So sánh</button>
+            <button class="btn btn-start" style="margin-top:15px;" onclick="compareSessions()">So sánh & Vẽ đồ thị</button>
+            
             <div id="compare-result" class="result-box"></div>
+            
+            <div id="compare-chart-container" style="display:none; width: 100%; height: 300px; margin-top: 20px;">
+                <canvas id="overlayChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -89,17 +100,16 @@
         let currentRoom = "";
         let isRecording = false;
         let isPaused = false;
-        let chart;
+        let chart, overlayChart;
 
-        let rawGround = [], rawBuilding = [];
         let dataGround = [], dataBuilding = [];
         
+        // Bộ lọc bóc trọng lực
         let gravityG = {x: 0, y: 0, z: 0, initialized: false};
         let gravityB = {x: 0, y: 0, z: 0, initialized: false};
         const alpha = 0.95;
-
         let lastTimestamp = 0;
-        let calculatedSampleRate = 0;
+        let calculatedSampleRate = 30; // Mặc định 30Hz
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
@@ -141,6 +151,7 @@
             });
         }
 
+        // Lọc bỏ trọng lực (chỉ giữ lại dao động)
         function applyHighPass(raw, state) {
             if (!state.initialized) {
                 state.x = raw.x; state.y = raw.y; state.z = raw.z;
@@ -160,22 +171,18 @@
         function processSensorData(data) {
             if (lastTimestamp > 0 && data.t > lastTimestamp) {
                 let dt = (data.t - lastTimestamp) / 1000;
-                if (dt > 0 && dt < 1) {
-                    let currentHz = 1 / dt;
-                    calculatedSampleRate = calculatedSampleRate * 0.9 + currentHz * 0.1;
-                    document.getElementById('sample-rate').innerText = `Tần số lấy mẫu: ${calculatedSampleRate.toFixed(1)} Hz`;
-                }
+                if (dt > 0 && dt < 1) calculatedSampleRate = 1 / dt; // Cập nhật tần số thực tế
             }
             lastTimestamp = data.t;
 
             let filteredAccel = 0;
             if (data.role === 'GROUND') {
                 filteredAccel = applyHighPass(data, gravityG);
-                if (isRecording) { rawGround.push(filteredAccel); dataGround.push(filteredAccel); }
+                if (isRecording) dataGround.push(filteredAccel);
                 if (!isPaused) { chart.data.datasets[0].data.push(filteredAccel); chart.data.datasets[1].data.push(null); }
             } else {
                 filteredAccel = applyHighPass(data, gravityB);
-                if (isRecording) { rawBuilding.push(filteredAccel); dataBuilding.push(filteredAccel); }
+                if (isRecording) dataBuilding.push(filteredAccel);
                 if (!isPaused) { chart.data.datasets[0].data.push(null); chart.data.datasets[1].data.push(filteredAccel); }
             }
 
@@ -190,83 +197,65 @@
             if (isRecording && dataBuilding.length % 10 === 0) updateLivePhysics();
         }
 
-        function calculateFFT(data, fs) {
-            let N = 256;
-            if (data.length < N) return 0;
-            let signal = data.slice(-N);
-            let mean = signal.reduce((a, b) => a + b, 0) / N;
-            signal = signal.map(v => v - mean);
-
-            function fft(re, im) {
-                let n = re.length;
-                for (let i = 1, j = 0; i < n; i++) {
-                    let bit = n >> 1;
-                    for (; j & bit; bit >>= 1) j ^= bit;
-                    j ^= bit;
-                    if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
-                }
-                for (let len = 2; len <= n; len <<= 1) {
-                    let ang = -2 * Math.PI / len;
-                    let wlenRe = Math.cos(ang), wlenIm = Math.sin(ang);
-                    for (let i = 0; i < n; i += len) {
-                        let wRe = 1, wIm = 0;
-                        for (let j = 0; j < len / 2; j++) {
-                            let uRe = re[i+j], uIm = im[i+j];
-                            let vRe = re[i+j+len/2] * wRe - im[i+j+len/2] * wIm;
-                            let vIm = re[i+j+len/2] * wIm + im[i+j+len/2] * wRe;
-                            re[i+j] = uRe + vRe; im[i+j] = uIm + vIm;
-                            re[i+j+len/2] = uRe - vRe; im[i+j+len/2] = uIm - vIm;
-                            let nextWRe = wRe * wlenRe - wIm * wlenIm;
-                            wIm = wRe * wlenIm + wIm * wlenRe; wRe = nextWRe;
-                        }
-                    }
-                }
-            }
-
-            let re = [...signal];
-            let im = new Array(N).fill(0);
-            fft(re, im);
-
-            let maxMag = 0, peakIndex = 0;
-            for (let i = 1; i < N / 2; i++) {
-                let mag = Math.sqrt(re[i]*re[i] + im[i]*im[i]);
-                if (mag > maxMag) { maxMag = mag; peakIndex = i; }
-            }
-
-            let peakFreq = (peakIndex * fs) / N;
-            return (peakFreq > 0.5 && peakFreq < 10) ? peakFreq : 0;
+        // === TÍNH TOÁN VẬT LÝ 11 (ĐƠN GIẢN, DỄ HIỂU) ===
+        
+        // 1. Tính biên độ A = (Max - Min) / 2
+        function calculateAmplitude(data) {
+            if (data.length < 30) return 0;
+            let recent = data.slice(-100); // Lấy 100 mẫu gần nhất
+            let max = Math.max(...recent);
+            let min = Math.min(...recent);
+            return (max - min) / 2;
         }
 
-        function calculateRMS(data) {
-            if (data.length === 0) return 0;
-            let mean = data.reduce((a, b) => a + b, 0) / data.length;
-            let sq = data.reduce((a, b) => a + (b - mean) ** 2, 0) / data.length;
-            return Math.sqrt(sq);
+        // 2. Tính tần số bằng phương pháp đếm điểm cắt trục 0 (Zero-crossing)
+        function calculateFrequency(data, fs) {
+            if (data.length < 50) return 0;
+            let recent = data.slice(-100);
+            let crossings = 0;
+            
+            for (let i = 1; i < recent.length; i++) {
+                // Nếu mẫu trước âm và mẫu này dương (cắt trục 0 đi lên)
+                if (recent[i-1] < 0 && recent[i] >= 0) crossings++;
+            }
+            
+            // Thời gian của 100 mẫu này = số mẫu / tần số lấy mẫu
+            let timeWindow = recent.length / fs;
+            
+            // Số chu kỳ = số lần cắt trục 0 (đi lên)
+            let f = crossings / timeWindow;
+            
+            // Lọc nhiễu tần số (chỉ lấy từ 0.5 Hz đến 10 Hz)
+            return (f > 0.5 && f < 10) ? f : 0;
         }
 
         function updateLivePhysics() {
-            let recentG = dataGround.slice(-500);
-            let recentB = dataBuilding.slice(-500);
+            // Xử lý GROUND
+            let aG = calculateAmplitude(dataGround);
+            let fG = calculateFrequency(dataGround, calculatedSampleRate);
+            document.getElementById('g-amp').innerText = aG.toFixed(3);
+            document.getElementById('g-freq').innerText = fG.toFixed(2);
+            document.getElementById('g-period').innerText = fG > 0 ? (1/fG).toFixed(2) : "0.00";
 
-            document.getElementById('g-amp').innerText = calculateRMS(recentG).toFixed(3);
-            document.getElementById('g-freq').innerText = calculateFFT(recentG, calculatedSampleRate || 30).toFixed(2);
-
-            document.getElementById('b-amp').innerText = calculateRMS(recentB).toFixed(3);
-            document.getElementById('b-freq').innerText = calculateFFT(recentB, calculatedSampleRate || 30).toFixed(2);
+            // Xử lý BUILDING
+            let aB = calculateAmplitude(dataBuilding);
+            let fB = calculateFrequency(dataBuilding, calculatedSampleRate);
+            document.getElementById('b-amp').innerText = aB.toFixed(3);
+            document.getElementById('b-freq').innerText = fB.toFixed(2);
+            document.getElementById('b-period').innerText = fB > 0 ? (1/fB).toFixed(2) : "0.00";
         }
 
         function startRecord() {
-            rawGround = []; rawBuilding = []; dataGround = []; dataBuilding = [];
+            dataGround = []; dataBuilding = [];
             isRecording = true; isPaused = false;
             document.getElementById('btn-record').disabled = true;
             document.getElementById('btn-pause').disabled = false;
             document.getElementById('btn-stop').disabled = false;
-            document.getElementById('btn-pause').innerText = "Tạm dừng biểu đồ";
         }
 
         function togglePause() {
             isPaused = !isPaused;
-            document.getElementById('btn-pause').innerText = isPaused ? "Tiếp tục biểu đồ" : "Tạm dừng biểu đồ";
+            document.getElementById('btn-pause').innerText = isPaused ? "Tiếp tục" : "Tạm dừng";
         }
 
         function stopRecord() {
@@ -281,23 +270,25 @@
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
             saved.push({ 
                 name, 
-                rmsB: calculateRMS(dataBuilding), 
-                rmsG: calculateRMS(dataGround),
-                freqB: calculateFFT(dataBuilding, calculatedSampleRate || 30)
+                ampB: calculateAmplitude(dataBuilding), 
+                freqB: calculateFrequency(dataBuilding, calculatedSampleRate),
+                // Lưu mảng dữ liệu để vẽ đồ thị chồng
+                chartData: dataBuilding.filter((_, index) => index % Math.ceil(dataBuilding.length / 300) === 0)
             });
             localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
-            alert("Đã lưu dữ liệu!");
+            alert("Đã lưu dữ liệu thành công!");
             updateDropdowns();
         }
 
         function updateDropdowns() {
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
             let html = '<option value="">-- Chọn --</option>';
-            saved.forEach((s, i) => html += `<option value="${i}">${s.name} (RMS: ${s.rmsB.toFixed(3)})</option>`);
+            saved.forEach((s, i) => html += `<option value="${i}">${s.name} (Biên độ A: ${s.ampB.toFixed(3)})</option>`);
             document.getElementById('sel-1').innerHTML = html;
             document.getElementById('sel-2').innerHTML = html;
         }
 
+        // === SO SÁNH VÀ VẼ ĐỒ THỊ CHỒNG ===
         function compareSessions() {
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
             let i1 = document.getElementById('sel-1').value;
@@ -305,18 +296,59 @@
             if (i1 === "" || i2 === "") return alert("Chọn đủ 2 phiên!");
             
             let s1 = saved[i1], s2 = saved[i2];
-            let percent = ((s1.rmsB - s2.rmsB) / s1.rmsB) * 100;
+            let percent = ((s1.ampB - s2.ampB) / s1.ampB) * 100;
             let color = percent > 0 ? '#10b981' : '#ef4444';
             
             let res = document.getElementById('compare-result');
             res.style.display = 'block';
             res.innerHTML = `
-                <h3>KẾT QUẢ PHÂN TÍCH (RMS)</h3>
-                <p>Phiên 1 (${s1.name}): RMS = ${s1.rmsB.toFixed(3)} m/s² | Tần số = ${s1.freqB.toFixed(2)} Hz</p>
-                <p>Phiên 2 (${s2.name}): RMS = ${s2.rmsB.toFixed(3)} m/s² | Tần số = ${s2.freqB.toFixed(2)} Hz</p>
+                <h3>KẾT QUẢ ĐO</h3>
+                <p><b>Không TMD (${s1.name}):</b> Biên độ A = ${s1.ampB.toFixed(3)} m/s² | Tần số f = ${s1.freqB.toFixed(2)} Hz</p>
+                <p><b>Có TMD (${s2.name}):</b> Biên độ A = ${s2.ampB.toFixed(3)} m/s² | Tần số f = ${s2.freqB.toFixed(2)} Hz</p>
+                <hr>
                 <p style="font-size: 24px;">Mức giảm biên độ: <strong style="color: ${color}">${percent.toFixed(2)}%</strong></p>
-                <p style="font-size: 14px; color:#64748b;">(Sử dụng giá trị RMS - Root Mean Square để đánh giá chính xác năng lượng dao động trung bình).</p>
+                <p style="font-size: 15px; color:#475569;">Công thức tính: % giảm = [(A<sub>không TMD</sub> - A<sub>có TMD</sub>) / A<sub>không TMD</sub>] × 100%</p>
             `;
+
+            document.getElementById('compare-chart-container').style.display = 'block';
+            if (overlayChart) overlayChart.destroy();
+            
+            const ctx = document.getElementById('overlayChart').getContext('2d');
+            overlayChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(Math.max(s1.chartData.length, s2.chartData.length)).fill(''),
+                    datasets: [
+                        { label: 'Không TMD', data: s1.chartData, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 },
+                        { label: 'Có TMD', data: s2.chartData, borderColor: '#10b981', borderWidth: 2, pointRadius: 0 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, animation: false }
+            });
+        }
+
+        function exportCSV() {
+            if (dataBuilding.length === 0) return alert("Chưa có dữ liệu để xuất!");
+            
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "ThoiGian(s),GROUND(m/s2),BUILDING(m/s2)\n";
+            
+            let dt = 1 / calculatedSampleRate;
+            let maxLen = Math.max(dataGround.length, dataBuilding.length);
+            for (let i = 0; i < maxLen; i++) {
+                let time = (i * dt).toFixed(3);
+                let g = dataGround[i] ? dataGround[i].toFixed(4) : "";
+                let b = dataBuilding[i] ? dataBuilding[i].toFixed(4) : "";
+                csvContent += `${time},${g},${b}\n`;
+            }
+            
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `TMD_Data_${currentRoom}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
