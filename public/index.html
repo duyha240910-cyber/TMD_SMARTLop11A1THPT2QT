@@ -218,10 +218,10 @@
         const ctx3d = canvas3d.getContext('2d');
         let angleX = -0.5, angleY = 0.5;
         let trail = [];
-        const maxTrail = 50; // Giảm số điểm để đỡ rối
-        const scale3D = 40; // Thu nhỏ hệ số phóng đại
-        let smooth3D = {x: 0, y: 0, z: 0}; // Bộ lọc làm mượt 3D
-        let smoothMag = 0; // Bộ lọc làm mượt Magnitude
+        const maxTrail = 50; 
+        const scale3D = 40; 
+        let smooth3D = {x: 0, y: 0, z: 0}; 
+        let smoothMag = 0; 
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
@@ -323,22 +323,19 @@
 
             if (data.role === 'GROUND') {
                 let f = applyHighPass(data, gravityG);
-                // Làm mượt Ground
                 if (isRecording) dataGround.push(f.mag);
                 if (!isPaused) { chart.data.datasets[0].data.push(f.mag); chart.data.datasets[1].data.push(null); }
             } else {
                 let f = applyHighPass(data, gravityB);
                 
-                // LÀM MƯỢT TÍN HIỆU ĐỘ LỚN (Để đồ thị 2D mượt hơn)
                 smoothMag = smoothMag * 0.7 + f.mag * 0.3; 
                 
                 if (isRecording) dataBuilding.push(smoothMag);
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.datasets[1].data.push(smoothMag); // FIX: chart.datasets -> chart.data.datasets
+                    chart.data.datasets[1].data.push(smoothMag); // <-- ĐÃ FIX LỖI TYPO Ở ĐÂY
                     
-                    // LÀM MƯỢT TÍN HIỆU 3D (Để đồ thị 3D không bị rối)
                     smooth3D.x = smooth3D.x * 0.8 + f.x * 0.2;
                     smooth3D.y = smooth3D.y * 0.8 + f.y * 0.2;
                     smooth3D.z = smooth3D.z * 0.8 + f.z * 0.2;
@@ -365,15 +362,12 @@
             return (max - min) / 2;
         }
 
-        // FIX LỖI TÍNH TẦN SỐ: Trừ đi giá trị trung bình để tín hiệu dao động quanh mốc 0
         function calculateFrequency(data, fs) {
             if (data.length < 50) return 0;
             let recent = data.slice(-100);
             
-            // 1. Tính giá trị trung bình
             let mean = recent.reduce((a, b) => a + b, 0) / recent.length;
             
-            // 2. Đếm số lần cắt trục 0
             let crossings = 0;
             for (let i = 1; i < recent.length; i++) {
                 if ((recent[i-1] - mean) < 0 && (recent[i] - mean) >= 0) crossings++;
@@ -394,7 +388,6 @@
             document.getElementById('b-freq').innerText = fB.toFixed(2);
             document.getElementById('b-period').innerText = fB > 0 ? (1/fB).toFixed(2) : "0.00";
 
-            // KIỂM TRA CẢNH BÁO RUNG MẠNH
             if (aB > ALERT_THRESHOLD) {
                 if (!isAlerting) { 
                     isAlerting = true; 
@@ -517,7 +510,6 @@
             });
         }
 
-        // TOÁN HỌC 3D VÀ VẼ CANVAS
         function project3D(x, y, z) {
             x *= scale3D; y *= scale3D; z *= scale3D;
             let y1 = y * Math.cos(angleX) - z * Math.sin(angleX);
@@ -531,7 +523,7 @@
 
         function draw3D() {
             ctx3d.clearRect(0, 0, canvas3d.width, canvas3d.height);
-            drawAxis3D(); // Vẽ hệ trục 3D
+            drawAxis3D();
 
             if (trail.length > 1) {
                 ctx3d.beginPath();
@@ -539,7 +531,7 @@
                     let p = project3D(trail[i].x, trail[i].y, trail[i].z);
                     if (!p) continue;
                     ctx3d.strokeStyle = `rgba(59, 130, 246, ${i / trail.length})`;
-                    ctx3d.lineWidth = 2 * p.scale; // Chỉnh lại độ dày nét vẽ
+                    ctx3d.lineWidth = 2 * p.scale; 
                     if (i === 0) ctx3d.moveTo(p.x, p.y); else ctx3d.lineTo(p.x, p.y);
                 }
                 ctx3d.stroke();
