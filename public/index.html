@@ -7,43 +7,18 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #f4f7f6;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --primary: #4f46e5;
-            --ground-color: #3b82f6;
-            --building-color: #ef4444;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh;
-            transition: background 0.3s;
-        }
+        :root { --bg: #f4f7f6; --card-bg: rgba(255, 255, 255, 0.85); --primary: #4f46e5; --ground-color: #3b82f6; --building-color: #ef4444; --text-main: #1e293b; --text-muted: #64748b; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s; }
         body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
         @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
 
         .container { max-width: 1400px; margin: auto; }
-        
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            padding: 15px 30px; border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
-        
-        .card {
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 25px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease;
-        }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; }
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
@@ -55,16 +30,14 @@
         .val-building.danger { color: #dc2626; text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .btn {
-            padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px;
-            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
         .btn-primary:hover:not(:disabled) { background: #4338ca; transform: scale(1.02); }
         .btn-danger { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
         .btn-danger:hover:not(:disabled) { background: #dc2626; transform: scale(1.02); }
         .btn-export { background: #10b981; color: white; }
+        .btn-metronome { background: #8b5cf6; color: white; }
         .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 8px; }
 
         #liveChart-container { grid-column: span 2; height: 350px; position: relative;}
@@ -81,39 +54,20 @@
         #qrcode-box { text-align: center; margin-top: 10px; display: flex; justify-content: center;}
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none;}
         
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1e1b4b, #312e81);
-            display: flex; align-items: center; justify-content: center; z-index: 999;
-        }
-        .login-card {
-            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
-            padding: 50px; border-radius: 30px; text-align: center; color: white;
-            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px;
-        }
-        .login-card input {
-            width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px;
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;
-            border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; font-weight: bold;
-        }
-        .login-card button {
-            width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px;
-            background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s;
-        }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .login-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 30px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px; }
+        .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
+        .login-card button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px; background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
         .login-card button:hover { background: #4338ca; }
 
-        @media print {
-            body { background: white; }
-            .no-print, #login-screen { display: none !important; }
-            .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; }
-        }
+        @media print { body { background: white; } .no-print, #login-screen { display: none !important; } .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; } }
     </style>
 </head>
 <body>
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Ultimate Version (Fixed)</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Ultimate Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -167,6 +121,12 @@
                     <button class="btn btn-primary" id="btn-pause" onclick="togglePause()" disabled style="background:#f59e0b;">Tạm dừng</button>
                     <button class="btn btn-danger" id="btn-stop" onclick="stopRecord()" disabled>Dừng</button>
                 </div>
+                
+                <div class="btn-group" style="margin-top: 10px;">
+                    <button class="btn btn-metronome" id="btn-metronome" onclick="toggleMetronome()">🎵 Bật máy đếm nhịp</button>
+                    <button class="btn btn-export" onclick="calibrate()" style="background: #3b82f6;">⚖️ Hiệu chuẩn (Về 0)</button>
+                </div>
+
                 <button class="btn btn-export" onclick="exportCSV()" style="width: 100%; margin-bottom: 20px;">Xuất dữ liệu Excel</button>
                 
                 <hr style="border: 1px solid #e2e8f0; margin-bottom: 20px;">
@@ -196,32 +156,23 @@
     </div>
 
     <script>
-        let ws;
-        let currentRoom = "";
-        let isRecording = false;
-        let isPaused = false;
+        let ws, currentRoom = "", isRecording = false, isPaused = false;
         let chart, overlayChart;
         let dataGround = [], dataBuilding = [];
-        let gravityG = {x: 0, y: 0, z: 0, initialized: false};
-        let gravityB = {x: 0, y: 0, z: 0, initialized: false};
+        let gravityG = {x: 0, y: 0, z: 0, initialized: false}, gravityB = {x: 0, y: 0, z: 0, initialized: false};
         const alpha = 0.95;
-        let lastTimestamp = 0;
-        let calculatedSampleRate = 30;
-
-        // Cấu hình cảnh báo
-        const ALERT_THRESHOLD = 5.0;
+        let lastTimestamp = 0, calculatedSampleRate = 30;
         let isAlerting = false;
-        const beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        const ALERT_THRESHOLD = 5.0, beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
         // Cấu hình 3D
-        const canvas3d = document.getElementById('canvas3d');
-        const ctx3d = canvas3d.getContext('2d');
-        let angleX = -0.5, angleY = 0.5;
-        let trail = [];
-        const maxTrail = 50; 
-        const scale3D = 40; 
-        let smooth3D = {x: 0, y: 0, z: 0}; 
-        let smoothMag = 0; 
+        const canvas3d = document.getElementById('canvas3d'), ctx3d = canvas3d.getContext('2d');
+        let angleX = -0.5, angleY = 0.5, trail = [];
+        const maxTrail = 50, scale3D = 40;
+        let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
+
+        // Cấu hình Metronome
+        let metronomeInterval = null, audioCtx = null;
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
@@ -234,9 +185,7 @@
             document.getElementById('qrcode-box').innerHTML = "";
             new QRCode(document.getElementById("qrcode-box"), {
                 text: window.location.origin + "/sensor.html?room=" + currentRoom,
-                width: 100, height: 100,
-                colorDark : "#000000", colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
 
             resizeCanvas();
@@ -260,6 +209,54 @@
             requestAnimationFrame(draw3D);
         }
 
+        // === TÍNH NĂNG MỚI: MÁY ĐẾM NHỊP (METRONOME) ===
+        function toggleMetronome() {
+            let btn = document.getElementById('btn-metronome');
+            if (metronomeInterval) {
+                clearInterval(metronomeInterval);
+                metronomeInterval = null;
+                btn.innerText = "🎵 Bật máy đếm nhịp";
+                btn.style.background = "#8b5cf6";
+            } else {
+                // Lấy tần số lý thuyết để làm nhịp
+                let fTMD = parseFloat(document.getElementById('f-tmd').innerText) || 1;
+                if (fTMD <= 0) return alert("Vui lòng nhập chiều dài con lắc hợp lệ!");
+                
+                let intervalMs = 1000 / fTMD;
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                metronomeInterval = setInterval(() => {
+                    // Tạo tiếng "tách" bằng Web Audio API
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }, intervalMs);
+                
+                btn.innerText = `⏹ Tắt nhịp (${fTMD.toFixed(2)} Hz)`;
+                btn.style.background = "#ef4444";
+            }
+        }
+
+        // === TÍNH NĂNG MỚI: HIỆU CHUẨN VỀ 0 ===
+        function calibrate() {
+            gravityG.initialized = false;
+            gravityB.initialized = false;
+            smooth3D = {x: 0, y: 0, z: 0};
+            smoothMag = 0;
+            trail = [];
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.data.datasets[1].data = [];
+            chart.update();
+            alert("Đã hiệu chuẩn cảm biến! Mốc 0 đã được thiết lập lại.");
+        }
+
         function initChart() {
             const ctx = document.getElementById('liveChart').getContext('2d');
             let gradientB = ctx.createLinearGradient(0, 0, 0, 400);
@@ -281,6 +278,9 @@
             if (L > 0) {
                 let f = (1 / (2 * Math.PI)) * Math.sqrt(9.81 / L);
                 document.getElementById('f-tmd').innerText = f.toFixed(2);
+                if (metronomeInterval) { // Cập nhật lại nhịp nếu đang bật
+                    toggleMetronome(); toggleMetronome();
+                }
             }
             checkResonance();
         }
@@ -327,14 +327,13 @@
                 if (!isPaused) { chart.data.datasets[0].data.push(f.mag); chart.data.datasets[1].data.push(null); }
             } else {
                 let f = applyHighPass(data, gravityB);
-                
                 smoothMag = smoothMag * 0.7 + f.mag * 0.3; 
                 
                 if (isRecording) dataBuilding.push(smoothMag);
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.data.datasets[1].data.push(smoothMag); // <-- ĐÃ FIX LỖI TYPO Ở ĐÂY
+                    chart.data.datasets[1].data.push(smoothMag);
                     
                     smooth3D.x = smooth3D.x * 0.8 + f.x * 0.2;
                     smooth3D.y = smooth3D.y * 0.8 + f.y * 0.2;
@@ -365,14 +364,11 @@
         function calculateFrequency(data, fs) {
             if (data.length < 50) return 0;
             let recent = data.slice(-100);
-            
             let mean = recent.reduce((a, b) => a + b, 0) / recent.length;
-            
             let crossings = 0;
             for (let i = 1; i < recent.length; i++) {
                 if ((recent[i-1] - mean) < 0 && (recent[i] - mean) >= 0) crossings++;
             }
-            
             let f = crossings / (recent.length / fs);
             return (f > 0.5 && f < 10) ? f : 0;
         }
@@ -389,20 +385,10 @@
             document.getElementById('b-period').innerText = fB > 0 ? (1/fB).toFixed(2) : "0.00";
 
             if (aB > ALERT_THRESHOLD) {
-                if (!isAlerting) { 
-                    isAlerting = true; 
-                    document.body.classList.add('alert-mode');
-                    document.getElementById('b-amp').classList.add('danger');
-                    beepAudio.play();
-                }
+                if (!isAlerting) { isAlerting = true; document.body.classList.add('alert-mode'); document.getElementById('b-amp').classList.add('danger'); beepAudio.play(); }
             } else {
-                if (isAlerting) {
-                    isAlerting = false;
-                    document.body.classList.remove('alert-mode');
-                    document.getElementById('b-amp').classList.remove('danger');
-                }
+                if (isAlerting) { isAlerting = false; document.body.classList.remove('alert-mode'); document.getElementById('b-amp').classList.remove('danger'); }
             }
-
             checkResonance();
         }
 
@@ -542,10 +528,8 @@
                     ctx3d.beginPath();
                     ctx3d.arc(p.x, p.y, 5 * p.scale, 0, Math.PI * 2);
                     ctx3d.fillStyle = '#10b981';
-                    ctx3d.shadowBlur = 15;
-                    ctx3d.shadowColor = '#10b981';
-                    ctx3d.fill();
-                    ctx3d.shadowBlur = 0;
+                    ctx3d.shadowBlur = 15; ctx3d.shadowColor = '#10b981';
+                    ctx3d.fill(); ctx3d.shadowBlur = 0;
                 }
             }
             requestAnimationFrame(draw3D);
