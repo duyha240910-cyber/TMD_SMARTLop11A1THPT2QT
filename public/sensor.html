@@ -50,7 +50,6 @@
         .btn:disabled { opacity: 0.5; box-shadow: none; transform: none; }
         .btn-start:active:not(:disabled) { transform: scale(0.96); }
 
-        /* Nút Fullscreen nhỏ gọn */
         .btn-fullscreen { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-size: 12px; padding: 5px 10px; width: auto; position: absolute; top: 20px; right: 20px; z-index: 10;}
     </style>
 </head>
@@ -101,6 +100,7 @@
 
     <script>
         let ws, isMeasuring = false, lastTime = 0, currentRoom = "", currentRole = "";
+        let isReconnecting = false;
 
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -117,9 +117,7 @@
                     alert(`Lỗi không thể bật toàn màn hình: ${err.message}`);
                 });
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
@@ -129,30 +127,40 @@
             
             if (!currentRoom) return alert("Vui lòng nhập mã phòng!");
 
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-screen').style.display = 'flex';
+            document.getElementById('display-room').innerText = currentRoom;
+            
+            let badge = document.getElementById('role-badge');
+            badge.innerText = currentRole;
+            badge.className = `role-badge role-${currentRole}`;
+            
+            connectWebSocket();
+        }
+
+        function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             ws = new WebSocket(`${protocol}//${window.location.host}`);
 
             ws.onopen = () => {
+                isReconnecting = false;
                 ws.send(JSON.stringify({ type: 'join', role: currentRole, roomCode: currentRoom }));
-                
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-screen').style.display = 'flex';
-                document.getElementById('display-room').innerText = currentRoom;
-                
-                let badge = document.getElementById('role-badge');
-                badge.innerText = currentRole;
-                badge.className = `role-badge role-${currentRole}`;
-                
                 document.getElementById('status-text').innerText = "Sẵn sàng hoạt động";
+                document.getElementById('status-text').style.color = "var(--text-muted)";
                 document.getElementById('btn-start').disabled = false;
             };
 
             ws.onclose = () => {
+                if (isReconnecting) return;
+                isReconnecting = true;
                 document.getElementById('status-badge').classList.remove('recording');
-                document.getElementById('status-text').innerText = "Mất kết nối Server!";
+                document.getElementById('status-text').innerText = "Mất kết nối! Đang thử lại...";
                 document.getElementById('status-text').style.color = "var(--danger)";
                 document.getElementById('btn-start').disabled = true;
                 document.getElementById('btn-stop').disabled = true;
+                
+                // TỰ ĐỘNG KẾT NỐI LẠI SAU 3 GIÂY
+                setTimeout(connectWebSocket, 3000);
             };
         }
 
