@@ -7,24 +7,56 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f4f7f6; --card-bg: rgba(255, 255, 255, 0.85); --primary: #4f46e5; --ground-color: #3b82f6; --building-color: #ef4444; --text-main: #1e293b; --text-muted: #64748b; }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s; }
+        /* KHAI BÁO BIẾN MÀU SẮC (HỖ TRỢ DARK/LIGHT MODE) */
+        :root {
+            --bg: #f4f7f6;
+            --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #4f46e5;
+            --ground-color: #3b82f6;
+            --building-color: #ef4444;
+        }
+
+        body.dark-mode {
+            --bg: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #818cf8;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s, color 0.3s; }
         body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
         @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
 
-        .container { max-width: 1400px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .container { max-width: 1400px; margin: auto; transition: max-width 0.3s; }
+        
+        /* CHẾ ĐỘ TRÌNH CHIẾU (PRESENTATION MODE) */
+        body.presentation-mode .no-print { display: none !important; }
+        body.presentation-mode .container { max-width: 1800px; }
+        body.presentation-mode .grid-layout { grid-template-columns: 1fr 1fr; }
+        body.presentation-mode #liveChart-container { grid-column: span 2; height: 450px; }
+        body.presentation-mode #canvas3d-container { grid-column: span 2; height: 500px; }
+        body.presentation-mode .metric-value { font-size: 48px; }
+        body.presentation-mode .card-title { font-size: 24px; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-color);}
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; border: 1px solid var(--border-color);}
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
-        .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);}
         .metric-label { font-size: 15px; color: var(--text-muted); font-weight: 600;}
-        .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; transition: color 0.3s; }
+        .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; transition: color 0.3s, font-size 0.3s; }
         .val-ground { color: var(--ground-color); }
         .val-building { color: var(--building-color); }
         .val-building.danger { color: #dc2626; text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
@@ -38,20 +70,21 @@
         .btn-danger:hover:not(:disabled) { background: #dc2626; transform: scale(1.02); }
         .btn-export { background: #10b981; color: white; }
         .btn-metronome { background: #8b5cf6; color: white; }
+        .btn-darkmode { background: #334155; color: white; }
 
-        #liveChart-container { grid-column: span 2; height: 350px; position: relative;}
-        #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab;}
+        #liveChart-container { grid-column: span 2; height: 350px; position: relative; transition: height 0.3s;}
+        #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab; transition: height 0.3s;}
         #canvas3d-container:active { cursor: grabbing; }
         #canvas3d { width: 100%; height: 100%; display: block;}
         .canvas-hint { position: absolute; bottom: 15px; right: 20px; color: #94a3b8; font-size: 13px; font-weight: 600; pointer-events: none;}
 
-        .resonance-box { background: #f8fafc; border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed #cbd5e1; }
-        .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; width: 100px; text-align: center; font-weight: bold;}
+        .resonance-box { background: var(--bg); border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed var(--border-color); transition: background 0.3s;}
+        .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; width: 100px; text-align: center; font-weight: bold; background: var(--card-bg); color: var(--text-main);}
         .badge-res { margin-top: 15px; padding: 12px; border-radius: 12px; font-weight: 800; color: white; background: #94a3b8; font-size: 15px; transition: 0.3s;}
         .error-text { font-size: 13px; color: var(--text-muted); margin-top: 5px; font-weight: 600;}
 
-        #qrcode-box { text-align: center; margin-top: 10px; display: flex; justify-content: center;}
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none;}
+        #qrcode-box { text-align: center; margin-top: 10px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 12px; width: fit-content; margin-left: auto; margin-right: auto;}
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none; background: var(--card-bg); color: var(--text-main);}
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; z-index: 999; }
         .login-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 30px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px; }
@@ -59,14 +92,14 @@
         .login-card button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px; background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
         .login-card button:hover { background: #4338ca; }
 
-        @media print { body { background: white; } .no-print, #login-screen { display: none !important; } .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; } }
+        @media print { body { background: white; color: black; } .no-print, #login-screen { display: none !important; } .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; } }
     </style>
 </head>
 <body>
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Enterprise Backend Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Enterprise Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -79,18 +112,20 @@
                 <span id="status-g" style="font-weight:bold; color:#64748b; margin-right: 15px;">GROUND: Chờ...</span>
                 <span id="status-b" style="font-weight:bold; color:#64748b; margin-right: 15px;">BUILDING: Chờ...</span>
                 <span class="room-badge">Phòng: <span id="display-room"></span></span>
+                <button class="btn btn-darkmode" onclick="toggleDarkMode()" style="padding: 8px 12px; margin-left: 10px;">🌙 Đổi màu nền</button>
+                <button class="btn btn-primary" onclick="togglePresentation()" style="padding: 8px 12px;">📺 Trình chiếu</button>
             </div>
         </div>
 
         <div class="grid-layout">
-            <div class="card no-print">
+            <div class="card">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
                 <div class="metric-row"><span class="metric-label">Tần số f</span><span class="metric-value val-ground" id="g-freq">0.00</span></div>
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
-            <div class="card no-print" style="border-left: 4px solid var(--building-color);">
+            <div class="card" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
                 <div class="metric-row"><span class="metric-label">Tần số f</span><span class="metric-value val-building" id="b-freq">0.00</span></div>
@@ -110,7 +145,7 @@
                 </div>
             </div>
 
-            <div class="card no-print" id="liveChart-container">
+            <div class="card" id="liveChart-container">
                 <canvas id="liveChart"></canvas>
             </div>
 
@@ -122,13 +157,13 @@
                 </div>
                 
                 <div class="btn-group" style="margin-top: 10px;">
-                    <button class="btn btn-metronome" id="btn-metronome" onclick="toggleMetronome()">🎵 Bật máy đếm nhịp</button>
+                    <button class="btn btn-metronome" id="btn-metronome" onclick="toggleMetronome()">🎵 Máy đếm nhịp</button>
                     <button class="btn btn-export" onclick="calibrate()" style="background: #3b82f6;">⚖️ Hiệu chuẩn (Về 0)</button>
                 </div>
 
                 <button class="btn btn-export" onclick="exportLocalCSV()" style="width: 100%; margin-bottom: 20px;">Tải File CSV Trực tiếp</button>
                 
-                <hr style="border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                <hr style="border: 1px solid var(--border-color); margin-bottom: 20px;">
                 
                 <div class="card-title">So sánh hiệu quả</div>
                 <div style="display:flex; gap:5px; margin-bottom:15px;">
@@ -149,7 +184,7 @@
 
             <div class="card" id="canvas3d-container">
                 <canvas id="canvas3d"></canvas>
-                <div class="canvas-hint">Giữ chuột trái để xoay không gian 3D</div>
+                <div class="canvas-hint no-print">Giữ chuột trái để xoay không gian 3D</div>
             </div>
         </div>
     </div>
@@ -174,10 +209,37 @@
         let metronomeInterval = null, audioCtx = null;
         let isReconnecting = false;
 
+        // TỰ ĐỘNG LƯU CẤU HÌNH
+        window.onload = () => {
+            let savedRoom = localStorage.getItem('tmd_last_room');
+            let savedL = localStorage.getItem('tmd_last_L');
+            if (savedRoom) document.getElementById('input-room').value = savedRoom;
+            if (savedL) document.getElementById('input-L').value = savedL;
+            
+            let savedTheme = localStorage.getItem('tmd_theme');
+            if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+        };
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('tmd_theme', isDark ? 'dark' : 'light');
+        }
+
+        function togglePresentation() {
+            document.body.classList.toggle('presentation-mode');
+            // Đợi CSS chuyển đổi xong mới resize canvas
+            setTimeout(resizeCanvas, 350);
+        }
+
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
             if (!room) return alert("Nhập mã phòng!");
             currentRoom = room;
+            
+            // Lưu mã phòng vào máy để lần sau mở lên không cần gõ lại
+            localStorage.setItem('tmd_last_room', currentRoom);
+
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-screen').style.display = 'block';
             document.getElementById('display-room').innerText = currentRoom;
@@ -231,7 +293,7 @@
             let btn = document.getElementById('btn-metronome');
             if (metronomeInterval) {
                 clearInterval(metronomeInterval); metronomeInterval = null;
-                btn.innerText = "🎵 Bật máy đếm nhịp"; btn.style.background = "#8b5cf6";
+                btn.innerText = "🎵 Máy đếm nhịp"; btn.style.background = "#8b5cf6";
             } else {
                 let fTMD = parseFloat(document.getElementById('f-tmd').innerText) || 1;
                 if (fTMD <= 0) return alert("Vui lòng nhập chiều dài con lắc hợp lệ!");
@@ -271,13 +333,14 @@
                     { label: 'GROUND', data: [], borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.3 },
                     { label: 'BUILDING', data: [], borderColor: '#ef4444', backgroundColor: gradientB, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3 }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false, animation: false }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { labels: { color: document.body.classList.contains('dark-mode') ? '#f8fafc' : '#1e293b' } } } }
             });
         }
 
         function updatePendulum() {
             let L = parseFloat(document.getElementById('input-L').value);
             if (L > 0) {
+                localStorage.setItem('tmd_last_L', L); // Lưu chiều dài L
                 let f = (1 / (2 * Math.PI)) * Math.sqrt(9.81 / L);
                 document.getElementById('f-tmd').innerText = f.toFixed(2);
                 if (metronomeInterval) { toggleMetronome(); toggleMetronome(); }
@@ -479,19 +542,19 @@
             res.innerHTML = `
                 <h2 style="margin-top:0; color:var(--primary);">KẾT QUẢ PHÂN TÍCH TMD</h2>
                 <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                    <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1; margin-right:10px;">
-                        <div style="color:#64748b; font-weight:bold;">${s1.name}</div>
+                    <div style="background:var(--bg); padding:15px; border-radius:12px; flex:1; margin-right:10px;">
+                        <div style="color:var(--text-muted); font-weight:bold;">${s1.name}</div>
                         <div style="font-size:24px; font-weight:800;">A = ${s1.ampB.toFixed(3)}</div>
-                        <div style="color:#64748b;">Tần số: ${s1.freqB.toFixed(2)} Hz</div>
+                        <div style="color:var(--text-muted);">Tần số: ${s1.freqB.toFixed(2)} Hz</div>
                     </div>
-                    <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1;">
-                        <div style="color:#64748b; font-weight:bold;">${s2.name}</div>
+                    <div style="background:var(--bg); padding:15px; border-radius:12px; flex:1;">
+                        <div style="color:var(--text-muted); font-weight:bold;">${s2.name}</div>
                         <div style="font-size:24px; font-weight:800;">A = ${s2.ampB.toFixed(3)}</div>
-                        <div style="color:#64748b;">Tần số: ${s2.freqB.toFixed(2)} Hz</div>
+                        <div style="color:var(--text-muted);">Tần số: ${s2.freqB.toFixed(2)} Hz</div>
                     </div>
                 </div>
                 <div style="margin-top:20px; text-align:center;">
-                    <div style="font-size:16px; color:#64748b; font-weight:bold; text-transform:uppercase;">Hiệu quả giảm chấn</div>
+                    <div style="font-size:16px; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Hiệu quả giảm chấn</div>
                     <div style="font-size:48px; font-weight:800; color:${color};">${percent.toFixed(2)}%</div>
                 </div>
             `;
@@ -505,7 +568,7 @@
                     { label: s1.name, data: s1.chartData, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 },
                     { label: s2.name, data: s2.chartData, borderColor: '#10b981', borderWidth: 2, pointRadius: 0 }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom' } } }
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark-mode') ? '#f8fafc' : '#1e293b' } } } }
             });
         }
 
