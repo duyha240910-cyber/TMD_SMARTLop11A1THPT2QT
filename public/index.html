@@ -22,7 +22,6 @@
             color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh;
             transition: background 0.3s;
         }
-        /* Hiệu ứng cảnh báo toàn màn hình */
         body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
         @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
 
@@ -80,7 +79,6 @@
         .error-text { font-size: 13px; color: var(--text-muted); margin-top: 5px; font-weight: 600;}
 
         #qrcode-box { text-align: center; margin-top: 10px; display: flex; justify-content: center;}
-        
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none;}
         
         #login-screen {
@@ -115,7 +113,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Ultimate Version (Restored)</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Ultimate Version (Fixed)</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -132,7 +130,6 @@
         </div>
 
         <div class="grid-layout">
-            <!-- Bảng Ground -->
             <div class="card no-print">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
@@ -140,7 +137,6 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
-            <!-- Bảng Building -->
             <div class="card no-print" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
@@ -148,7 +144,6 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-building" id="b-period">0.00</span></div>
             </div>
 
-            <!-- Trạm Con lắc & QR Code -->
             <div class="card no-print">
                 <div class="card-title">Trạm kết nối & Con lắc</div>
                 <div id="qrcode-box"></div>
@@ -162,12 +157,10 @@
                 </div>
             </div>
 
-            <!-- Đồ thị 2D -->
             <div class="card no-print" id="liveChart-container">
                 <canvas id="liveChart"></canvas>
             </div>
 
-            <!-- Bảng điều khiển -->
             <div class="card no-print">
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Ghi dữ liệu</button>
@@ -190,13 +183,11 @@
                 <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF</button>
             </div>
 
-            <!-- Kết quả so sánh & Đồ thị chồng -->
             <div class="card" id="compare-result" style="display:none; grid-column: span 2;"></div>
             <div class="card" id="compare-chart-container" style="display:none; grid-column: span 3; height: 300px; position:relative;">
                 <canvas id="overlayChart"></canvas>
             </div>
 
-            <!-- ĐỒ THỊ 3D TỰ VIẾT (CANVAS) -->
             <div class="card" id="canvas3d-container">
                 <canvas id="canvas3d"></canvas>
                 <div class="canvas-hint">Giữ chuột trái để xoay không gian 3D</div>
@@ -218,7 +209,7 @@
         let calculatedSampleRate = 30;
 
         // Cấu hình cảnh báo
-        const ALERT_THRESHOLD = 5.0; // Ngưỡng rung mạnh (m/s2)
+        const ALERT_THRESHOLD = 5.0;
         let isAlerting = false;
         const beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
@@ -227,7 +218,10 @@
         const ctx3d = canvas3d.getContext('2d');
         let angleX = -0.5, angleY = 0.5;
         let trail = [];
-        const maxTrail = 100, scale3D = 80;
+        const maxTrail = 50; // Giảm số điểm để đỡ rối
+        const scale3D = 40; // Thu nhỏ hệ số phóng đại
+        let smooth3D = {x: 0, y: 0, z: 0}; // Bộ lọc làm mượt 3D
+        let smoothMag = 0; // Bộ lọc làm mượt Magnitude
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
@@ -237,7 +231,6 @@
             document.getElementById('main-screen').style.display = 'block';
             document.getElementById('display-room').innerText = currentRoom;
 
-            // TẠO MÃ QR CODE TỰ ĐỘNG
             document.getElementById('qrcode-box').innerHTML = "";
             new QRCode(document.getElementById("qrcode-box"), {
                 text: window.location.origin + "/sensor.html?room=" + currentRoom,
@@ -329,16 +322,28 @@
             lastTimestamp = data.t;
 
             if (data.role === 'GROUND') {
-                let filtered = applyHighPass(data, gravityG);
-                if (isRecording) dataGround.push(filtered.mag);
-                if (!isPaused) { chart.data.datasets[0].data.push(filtered.mag); chart.data.datasets[1].data.push(null); }
+                let f = applyHighPass(data, gravityG);
+                // Làm mượt Ground
+                if (isRecording) dataGround.push(f.mag);
+                if (!isPaused) { chart.data.datasets[0].data.push(f.mag); chart.data.datasets[1].data.push(null); }
             } else {
-                let filtered = applyHighPass(data, gravityB);
-                if (isRecording) dataBuilding.push(filtered.mag);
+                let f = applyHighPass(data, gravityB);
+                
+                // LÀM MƯỢT TÍN HIỆU ĐỘ LỚN (Để đồ thị 2D mượt hơn)
+                smoothMag = smoothMag * 0.7 + f.mag * 0.3; 
+                
+                if (isRecording) dataBuilding.push(smoothMag);
+                
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.data.datasets[1].data.push(filtered.mag); 
-                    trail.push({ x: filtered.x, y: filtered.y, z: filtered.z });
+                    chart.datasets[1].data.push(smoothMag); // FIX: chart.datasets -> chart.data.datasets
+                    
+                    // LÀM MƯỢT TÍN HIỆU 3D (Để đồ thị 3D không bị rối)
+                    smooth3D.x = smooth3D.x * 0.8 + f.x * 0.2;
+                    smooth3D.y = smooth3D.y * 0.8 + f.y * 0.2;
+                    smooth3D.z = smooth3D.z * 0.8 + f.z * 0.2;
+
+                    trail.push({ x: smooth3D.x, y: smooth3D.y, z: smooth3D.z });
                     if (trail.length > maxTrail) trail.shift();
                 }
             }
@@ -360,10 +365,20 @@
             return (max - min) / 2;
         }
 
+        // FIX LỖI TÍNH TẦN SỐ: Trừ đi giá trị trung bình để tín hiệu dao động quanh mốc 0
         function calculateFrequency(data, fs) {
             if (data.length < 50) return 0;
-            let recent = data.slice(-100), crossings = 0;
-            for (let i = 1; i < recent.length; i++) if (recent[i-1] < 0 && recent[i] >= 0) crossings++;
+            let recent = data.slice(-100);
+            
+            // 1. Tính giá trị trung bình
+            let mean = recent.reduce((a, b) => a + b, 0) / recent.length;
+            
+            // 2. Đếm số lần cắt trục 0
+            let crossings = 0;
+            for (let i = 1; i < recent.length; i++) {
+                if ((recent[i-1] - mean) < 0 && (recent[i] - mean) >= 0) crossings++;
+            }
+            
             let f = crossings / (recent.length / fs);
             return (f > 0.5 && f < 10) ? f : 0;
         }
@@ -400,6 +415,7 @@
 
         function startRecord() {
             dataGround = []; dataBuilding = []; trail = [];
+            smooth3D = {x: 0, y: 0, z: 0}; smoothMag = 0;
             isRecording = true; isPaused = false;
             document.getElementById('btn-record').disabled = true;
             document.getElementById('btn-pause').disabled = false;
@@ -523,7 +539,7 @@
                     let p = project3D(trail[i].x, trail[i].y, trail[i].z);
                     if (!p) continue;
                     ctx3d.strokeStyle = `rgba(59, 130, 246, ${i / trail.length})`;
-                    ctx3d.lineWidth = 3 * p.scale;
+                    ctx3d.lineWidth = 2 * p.scale; // Chỉnh lại độ dày nét vẽ
                     if (i === 0) ctx3d.moveTo(p.x, p.y); else ctx3d.lineTo(p.x, p.y);
                 }
                 ctx3d.stroke();
@@ -532,7 +548,7 @@
                 let p = project3D(last.x, last.y, last.z);
                 if (p) {
                     ctx3d.beginPath();
-                    ctx3d.arc(p.x, p.y, 6 * p.scale, 0, Math.PI * 2);
+                    ctx3d.arc(p.x, p.y, 5 * p.scale, 0, Math.PI * 2);
                     ctx3d.fillStyle = '#10b981';
                     ctx3d.shadowBlur = 15;
                     ctx3d.shadowColor = '#10b981';
