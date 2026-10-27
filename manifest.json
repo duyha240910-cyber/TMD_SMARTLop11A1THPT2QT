@@ -1,0 +1,8 @@
+{
+  "name": "TMD Smart Sensor",
+  "short_name": "TMD",
+  "start_url": "/sensor.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1d4ed8"
+}
