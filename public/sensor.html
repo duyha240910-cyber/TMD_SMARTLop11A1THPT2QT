@@ -19,7 +19,6 @@
         #main-screen { display: none; }
         .box { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         button { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-connect { background: #f59e0b; color: white; }
         .btn-start { background: #10b981; color: white; }
         .btn-stop { background: #ef4444; color: white; }
         button:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
@@ -76,7 +75,6 @@
             ws = new WebSocket(`${protocol}//${window.location.host}`);
 
             ws.onopen = () => {
-                // Gửi yêu cầu vào phòng
                 ws.send(JSON.stringify({ type: 'join', role: currentRole, roomCode: currentRoom }));
                 
                 document.getElementById('login-screen').style.display = 'none';
@@ -96,7 +94,6 @@
         }
 
         async function startMeasure() {
-            // Xin quyền cảm biến
             if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
                 try {
                     const permission = await DeviceMotionEvent.requestPermission();
@@ -121,25 +118,32 @@
             window.removeEventListener('devicemotion', handleMotion);
         }
 
+        // HÀM LẤY DỮ LIỆU 3 TRỤC VÀ THỜI GIAN THỰC
         function handleMotion(event) {
             if (!isMeasuring) return;
+            
             const acc = event.accelerationIncludingGravity;
             if (!acc || acc.x === null) return;
             
-            const magnitude = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
-            document.getElementById('accel-value').innerText = magnitude.toFixed(2);
+            const now = performance.now(); // Thời gian mili-giây
 
-            const now = Date.now();
-            if (now - lastTime > 50) { // Gửi 20 lần/giây
+            // Gửi 30 lần/giây (30Hz)
+            if (now - lastTime > 33) { 
                 lastTime = now;
                 if (ws && ws.readyState === 1) {
                     ws.send(JSON.stringify({
                         type: 'sensor-data',
                         role: currentRole,
-                        magnitude: magnitude
+                        t: now, 
+                        x: acc.x,
+                        y: acc.y,
+                        z: acc.z
                     }));
                 }
             }
+            
+            const magnitude = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+            document.getElementById('accel-value').innerText = magnitude.toFixed(2);
         }
     </script>
 </body>
