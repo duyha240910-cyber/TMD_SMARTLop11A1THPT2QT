@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>TMD SMART - Dashboard</title>
+    <title>TMD SMART - Custom 3D Dashboard</title>
+    <!-- Chỉ dùng Chart.js cho đồ thị 2D, KHÔNG DÙNG THƯ VIỆN 3D NÀO CẢ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -20,7 +21,7 @@
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
             color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh;
         }
-        .container { max-width: 1300px; margin: auto; }
+        .container { max-width: 1400px; margin: auto; }
         
         .header {
             display: flex; justify-content: space-between; align-items: center;
@@ -39,7 +40,6 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
             transition: transform 0.2s ease;
         }
-        .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
         .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
@@ -61,7 +61,15 @@
         .btn-export { background: #10b981; color: white; }
         .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 8px; }
 
-        #chart-container { grid-column: span 2; height: 400px; position: relative;}
+        /* Vùng chứa đồ thị 2D */
+        .chart-container { position: relative; }
+        #liveChart-container { grid-column: span 2; height: 350px; }
+        
+        /* Vùng chứa đồ thị 3D Custom */
+        #canvas3d-container { grid-column: span 3; height: 450px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab;}
+        #canvas3d-container:active { cursor: grabbing; }
+        #canvas3d { width: 100%; height: 100%; display: block; border-radius: 12px;}
+        .canvas-hint { position: absolute; bottom: 15px; right: 20px; color: #94a3b8; font-size: 13px; font-weight: 600; pointer-events: none;}
 
         .resonance-box { background: #f8fafc; border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed #cbd5e1; }
         .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; width: 100px; text-align: center; font-weight: bold;}
@@ -102,7 +110,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Hệ thống Phân tích Dao động Vật lý 11</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Custom 3D Rendering - Vật lý 11</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -119,6 +127,7 @@
         </div>
 
         <div class="grid-layout">
+            <!-- Bảng Ground -->
             <div class="card no-print">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
@@ -126,6 +135,7 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
+            <!-- Bảng Building -->
             <div class="card no-print" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
@@ -133,6 +143,7 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-building" id="b-period">0.00</span></div>
             </div>
 
+            <!-- Trạm Con lắc -->
             <div class="card no-print">
                 <div class="card-title">Trạm Con lắc TMD</div>
                 <div class="resonance-box">
@@ -144,11 +155,12 @@
                 </div>
             </div>
 
-            <div class="card no-print" id="chart-container" style="grid-column: span 2;">
+            <!-- Đồ thị 2D -->
+            <div class="card no-print chart-container" id="liveChart-container">
                 <canvas id="liveChart"></canvas>
-                <button class="btn btn-primary btn-sm" onclick="downloadChart('liveChart')" style="position:absolute; top:20px; right:20px;">Tải ảnh đồ thị</button>
             </div>
 
+            <!-- Bảng điều khiển -->
             <div class="card no-print">
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Ghi dữ liệu</button>
@@ -156,7 +168,6 @@
                     <button class="btn btn-danger" id="btn-stop" onclick="stopRecord()" disabled>Dừng</button>
                 </div>
                 <button class="btn btn-export" onclick="exportCSV()" style="width: 100%; margin-bottom: 20px;">Xuất dữ liệu Excel</button>
-                
                 <hr style="border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 
                 <div class="card-title">So sánh hiệu quả</div>
@@ -171,10 +182,13 @@
                 <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF</button>
             </div>
 
+            <!-- Kết quả so sánh -->
             <div class="card" id="compare-result" style="display:none; grid-column: span 2;"></div>
-            <div class="card" id="compare-chart-container" style="display:none; grid-column: span 1; height: 300px; position:relative;">
-                <canvas id="overlayChart"></canvas>
-                <button class="btn btn-primary btn-sm" onclick="downloadChart('overlayChart')" style="position:absolute; top:20px; right:20px;">Tải ảnh đồ thị</button>
+
+            <!-- ĐỒ THỊ 3D TỰ VIẾT (CANVAS) -->
+            <div class="card" id="canvas3d-container">
+                <canvas id="canvas3d"></canvas>
+                <div class="canvas-hint">Giữ chuột trái để xoay không gian 3D</div>
             </div>
         </div>
     </div>
@@ -184,13 +198,21 @@
         let currentRoom = "";
         let isRecording = false;
         let isPaused = false;
-        let chart, overlayChart;
+        let chart;
         let dataGround = [], dataBuilding = [];
         let gravityG = {x: 0, y: 0, z: 0, initialized: false};
         let gravityB = {x: 0, y: 0, z: 0, initialized: false};
         const alpha = 0.95;
         let lastTimestamp = 0;
         let calculatedSampleRate = 30;
+
+        // --- BIẾN CHO ĐỒ THỊ 3D TỰ VIẾT ---
+        const canvas3d = document.getElementById('canvas3d');
+        const ctx3d = canvas3d.getContext('2d');
+        let angleX = -0.5, angleY = 0.5; // Góc xoay
+        let trail = []; // Mảng lưu tọa độ thật (X, Y, Z)
+        const maxTrail = 100; // Độ dài vệt sáng
+        const scale3D = 80; // Phóng to gia tốc (vì gia tốc thực rất nhỏ)
 
         function initChart() {
             const ctx = document.getElementById('liveChart').getContext('2d');
@@ -204,11 +226,7 @@
                     { label: 'GROUND', data: [], borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.1 },
                     { label: 'BUILDING', data: [], borderColor: '#ef4444', backgroundColor: gradientB, borderWidth: 2, pointRadius: 0, fill: true, tension: 0.1 }
                 ]},
-                options: { 
-                    responsive: true, maintainAspectRatio: false, animation: false, 
-                    plugins: { legend: { position: 'top', labels: { font: {family: 'Inter', weight: 'bold'} } } },
-                    scales: { x: { display: false }, y: { grid: { color: '#f1f5f9' } } } 
-                }
+                options: { responsive: true, maintainAspectRatio: false, animation: false }
             });
         }
 
@@ -219,6 +237,10 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-screen').style.display = 'block';
             document.getElementById('display-room').innerText = currentRoom;
+
+            // Fix kích thước Canvas
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
 
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             ws = new WebSocket(`${protocol}//${window.location.host}`);
@@ -236,6 +258,7 @@
             initChart();
             updateDropdowns();
             updatePendulum();
+            requestAnimationFrame(draw3D); // Bắt đầu vẽ 3D
         }
 
         function updatePendulum() {
@@ -247,25 +270,18 @@
             checkResonance();
         }
 
-        // === TÍNH SAI SỐ VẬT LÝ ===
         function checkResonance() {
             let fTMD = parseFloat(document.getElementById('f-tmd').innerText);
             let fBuilding = parseFloat(document.getElementById('b-freq').innerText);
             let badge = document.getElementById('resonance-badge');
             let errorDiv = document.getElementById('error-calc');
 
-            if (fBuilding === 0) { 
-                badge.innerText = "CHƯA ĐO"; badge.style.background = "#94a3b8"; 
-                errorDiv.innerText = "";
-                return; 
-            }
+            if (fBuilding === 0) { badge.innerText = "CHƯA ĐO"; badge.style.background = "#94a3b8"; errorDiv.innerText = ""; return; }
             
             let diffPercent = Math.abs(fTMD - fBuilding) / fTMD;
-            
-            // Hiển thị sai số
             errorDiv.innerText = `Sai số tần số: ${(diffPercent * 100).toFixed(1)}%`;
 
-            if (diffPercent < 0.15) { // Sai số dưới 15% coi như cộng hưởng
+            if (diffPercent < 0.15) {
                 badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!";
                 badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
             } else {
@@ -274,13 +290,14 @@
             }
         }
 
+        // Trả về Object chứa tọa độ 3D thật (sau khi lọc trọng lực)
         function applyHighPass(raw, state) {
             if (!state.initialized) { state.x = raw.x; state.y = raw.y; state.z = raw.z; state.initialized = true; }
             let fx = raw.x - state.x, fy = raw.y - state.y, fz = raw.z - state.z;
             state.x = alpha * state.x + (1 - alpha) * raw.x;
             state.y = alpha * state.y + (1 - alpha) * raw.y;
             state.z = alpha * state.z + (1 - alpha) * raw.z;
-            return Math.sqrt(fx*fx + fy*fy + fz*fz);
+            return { x: fx, y: fy, z: fz, mag: Math.sqrt(fx*fx + fy*fy + fz*fz) };
         }
 
         function processSensorData(data) {
@@ -290,15 +307,21 @@
             }
             lastTimestamp = data.t;
 
-            let filteredAccel = 0;
             if (data.role === 'GROUND') {
-                filteredAccel = applyHighPass(data, gravityG);
-                if (isRecording) dataGround.push(filteredAccel);
-                if (!isPaused) { chart.data.datasets[0].data.push(filteredAccel); chart.data.datasets[1].data.push(null); }
+                let filtered = applyHighPass(data, gravityG);
+                if (isRecording) dataGround.push(filtered.mag);
+                if (!isPaused) { chart.data.datasets[0].data.push(filtered.mag); chart.data.datasets[1].data.push(null); }
             } else {
-                filteredAccel = applyHighPass(data, gravityB);
-                if (isRecording) dataBuilding.push(filteredAccel);
-                if (!isPaused) { chart.data.datasets[0].data.push(null); chart.data.datasets[1].data.push(filteredAccel); }
+                let filtered = applyHighPass(data, gravityB);
+                if (isRecording) dataBuilding.push(filtered.mag);
+                if (!isPaused) { 
+                    chart.data.datasets[0].data.push(null); 
+                    chart.data.datasets[1].data.push(filtered.mag); 
+
+                    // === ĐẨY DỮ LIỆU TỌA ĐỘ THẬT VÀO MẢNG 3D ===
+                    trail.push({ x: filtered.x, y: filtered.y, z: filtered.z });
+                    if (trail.length > maxTrail) trail.shift();
+                }
             }
 
             if (!isPaused) {
@@ -309,6 +332,101 @@
                 chart.update('none');
             }
             if (isRecording && dataBuilding.length % 10 === 0) updateLivePhysics();
+        }
+
+        // === TOÁN HỌC CHIẾU 3D XUỐNG 2D ===
+        function project3D(x, y, z) {
+            // Nhân hệ số phóng đại
+            x *= scale3D; y *= scale3D; z *= scale3D;
+
+            // 1. Xoay quanh trục X
+            let y1 = y * Math.cos(angleX) - z * Math.sin(angleX);
+            let z1 = y * Math.sin(angleX) + z * Math.cos(angleX);
+
+            // 2. Xoay quanh trục Y
+            let x2 = x * Math.cos(angleY) + z1 * Math.sin(angleY);
+            let z2 = -x * Math.sin(angleY) + z1 * Math.cos(angleY);
+
+            // 3. Chiếu phối cảnh
+            let distance = 400;
+            let scale = distance / (distance + z2);
+            if (scale < 0) return null;
+
+            return {
+                x: (canvas3d.width / 2) + x2 * scale,
+                y: (canvas3d.height / 2) + y1 * scale,
+                scale: scale
+            };
+        }
+
+        function draw3D() {
+            ctx3d.clearRect(0, 0, canvas3d.width, canvas3d.height);
+
+            // Vẽ hệ trục
+            drawAxis3D();
+
+            // Vẽ vệt sáng quỹ đạo
+            if (trail.length > 1) {
+                ctx3d.beginPath();
+                for (let i = 0; i < trail.length; i++) {
+                    let p = project3D(trail[i].x, trail[i].y, trail[i].z);
+                    if (!p) continue;
+
+                    let opacity = i / trail.length;
+                    ctx3d.strokeStyle = `rgba(59, 130, 246, ${opacity})`;
+                    ctx3d.lineWidth = 3 * p.scale;
+
+                    if (i === 0) ctx3d.moveTo(p.x, p.y);
+                    else ctx3d.lineTo(p.x, p.y);
+                }
+                ctx3d.stroke();
+
+                // Vẽ điểm sáng hiện tại
+                let last = trail[trail.length - 1];
+                let p = project3D(last.x, last.y, last.z);
+                if (p) {
+                    ctx3d.beginPath();
+                    ctx3d.arc(p.x, p.y, 6 * p.scale, 0, Math.PI * 2);
+                    ctx3d.fillStyle = '#10b981';
+                    ctx3d.shadowBlur = 15;
+                    ctx3d.shadowColor = '#10b981';
+                    ctx3d.fill();
+                    ctx3d.shadowBlur = 0;
+                }
+            }
+            requestAnimationFrame(draw3D);
+        }
+
+        function drawAxis3D() {
+            let origin = project3D(0, 0, 0);
+            let xAxis = project3D(2, 0, 0); // Vẽ trục dài 2 m/s2
+            let yAxis = project3D(0, 2, 0);
+            let zAxis = project3D(0, 0, 2);
+
+            if (origin && xAxis) { ctx3d.beginPath(); ctx3d.moveTo(origin.x, origin.y); ctx3d.lineTo(xAxis.x, xAxis.y); ctx3d.strokeStyle = '#ef4444'; ctx3d.lineWidth = 2; ctx3d.stroke(); }
+            if (origin && yAxis) { ctx3d.beginPath(); ctx3d.moveTo(origin.x, origin.y); ctx3d.lineTo(yAxis.x, yAxis.y); ctx3d.strokeStyle = '#10b981'; ctx3d.lineWidth = 2; ctx3d.stroke(); }
+            if (origin && zAxis) { ctx3d.beginPath(); ctx3d.moveTo(origin.x, origin.y); ctx3d.lineTo(zAxis.x, zAxis.y); ctx3d.strokeStyle = '#3b82f6'; ctx3d.lineWidth = 2; ctx3d.stroke(); }
+        }
+
+        // --- SỰ KIỆN XOAY 3D ---
+        let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+        canvas3d.addEventListener('mousedown', (e) => { isDragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                let dx = e.clientX - lastMouseX;
+                let dy = e.clientY - lastMouseY;
+                angleY += dx * 0.01;
+                angleX += dy * 0.01;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+
+        function resizeCanvas() {
+            let container = document.getElementById('canvas3d-container');
+            canvas3d.width = container.clientWidth - 20;
+            canvas3d.height = container.clientHeight - 20;
         }
 
         function calculateAmplitude(data) {
@@ -340,7 +458,7 @@
         }
 
         function startRecord() {
-            dataGround = []; dataBuilding = [];
+            dataGround = []; dataBuilding = []; trail = [];
             isRecording = true; isPaused = false;
             document.getElementById('btn-record').disabled = true;
             document.getElementById('btn-pause').disabled = false;
@@ -363,7 +481,7 @@
             if (state === "1") name = "Không TMD";
             else if (state === "2") name = "Có TMD";
             else if (state === "3") name = "TMD Khóa";
-            else return; // Hủy bỏ
+            else return;
             
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
             saved.push({ 
@@ -376,21 +494,16 @@
             updateDropdowns();
         }
 
-        // === XÓA PHIÊN ĐO LỖI ===
         function deleteSession() {
-            let i1 = document.getElementById('sel-1').value;
-            let i2 = document.getElementById('sel-2').value;
-            if (i1 === "" && i2 === "") return alert("Vui lòng chọn một phiên ở ô drop-down để xóa!");
-            
+            let i1 = document.getElementById('sel-1').value, i2 = document.getElementById('sel-2').value;
+            if (i1 === "" && i2 === "") return alert("Vui lòng chọn một phiên để xóa!");
             let delIndex = (i2 !== "") ? i2 : i1;
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
-            
-            if(confirm(`Bạn có chắc muốn xóa phiên "${saved[delIndex].name}"?`)) {
+            if(confirm(`Bạn có chắc muốn xóa phiên này?`)) {
                 saved.splice(delIndex, 1);
                 localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
                 updateDropdowns();
                 document.getElementById('compare-result').style.display = 'none';
-                document.getElementById('compare-chart-container').style.display = 'none';
             }
         }
 
@@ -418,12 +531,12 @@
                 <div style="display:flex; justify-content:space-between; margin-top:20px;">
                     <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1; margin-right:10px;">
                         <div style="color:#64748b; font-weight:bold;">${s1.name}</div>
-                        <div style="font-size:24px; font-weight:800;">A = ${s1.ampB.toFixed(3)} <span style="font-size:14px; color:#64748b;">m/s²</span></div>
+                        <div style="font-size:24px; font-weight:800;">A = ${s1.ampB.toFixed(3)}</div>
                         <div style="color:#64748b;">Tần số: ${s1.freqB.toFixed(2)} Hz</div>
                     </div>
                     <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1;">
                         <div style="color:#64748b; font-weight:bold;">${s2.name}</div>
-                        <div style="font-size:24px; font-weight:800;">A = ${s2.ampB.toFixed(3)} <span style="font-size:14px; color:#64748b;">m/s²</span></div>
+                        <div style="font-size:24px; font-weight:800;">A = ${s2.ampB.toFixed(3)}</div>
                         <div style="color:#64748b;">Tần số: ${s2.freqB.toFixed(2)} Hz</div>
                     </div>
                 </div>
@@ -432,27 +545,6 @@
                     <div style="font-size:48px; font-weight:800; color:${color};">${percent.toFixed(2)}%</div>
                 </div>
             `;
-
-            document.getElementById('compare-chart-container').style.display = 'block';
-            if (overlayChart) overlayChart.destroy();
-            const ctx = document.getElementById('overlayChart').getContext('2d');
-            overlayChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: Array(Math.max(s1.chartData.length, s2.chartData.length)).fill(''), datasets: [
-                    { label: s1.name, data: s1.chartData, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 },
-                    { label: s2.name, data: s2.chartData, borderColor: '#10b981', borderWidth: 2, pointRadius: 0 }
-                ]},
-                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        // === TÍNH NĂNG MỚI: TẢI ĐỒ THỊ THÀNH ẢNH ===
-        function downloadChart(chartId) {
-            let canvas = document.getElementById(chartId);
-            let link = document.createElement('a');
-            link.download = `${chartId}_${currentRoom}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
         }
 
         function exportCSV() {
