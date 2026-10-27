@@ -38,7 +38,6 @@
         .btn-danger:hover:not(:disabled) { background: #dc2626; transform: scale(1.02); }
         .btn-export { background: #10b981; color: white; }
         .btn-metronome { background: #8b5cf6; color: white; }
-        .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 8px; }
 
         #liveChart-container { grid-column: span 2; height: 350px; position: relative;}
         #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab;}
@@ -67,7 +66,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Ultimate Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Enterprise Backend Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -127,7 +126,7 @@
                     <button class="btn btn-export" onclick="calibrate()" style="background: #3b82f6;">⚖️ Hiệu chuẩn (Về 0)</button>
                 </div>
 
-                <button class="btn btn-export" onclick="exportCSV()" style="width: 100%; margin-bottom: 20px;">Xuất dữ liệu Excel</button>
+                <button class="btn btn-export" onclick="exportLocalCSV()" style="width: 100%; margin-bottom: 20px;">Tải File CSV Trực tiếp</button>
                 
                 <hr style="border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 
@@ -171,8 +170,9 @@
         const maxTrail = 50, scale3D = 40;
         let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
 
-        // Cấu hình Metronome
+        // Cấu hình Metronome & Reconnect
         let metronomeInterval = null, audioCtx = null;
+        let isReconnecting = false;
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
@@ -191,9 +191,24 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
+            connectWebSocket();
+            initChart();
+            updateDropdowns();
+            updatePendulum();
+            requestAnimationFrame(draw3D);
+        }
+
+        function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             ws = new WebSocket(`${protocol}//${window.location.host}`);
-            ws.onopen = () => ws.send(JSON.stringify({ type: 'join', role: 'dashboard', roomCode: currentRoom }));
+            
+            ws.onopen = () => {
+                isReconnecting = false;
+                ws.send(JSON.stringify({ type: 'join', role: 'dashboard', roomCode: currentRoom }));
+                document.getElementById('status-g').innerHTML = "GROUND: Chờ...";
+                document.getElementById('status-b').innerHTML = "BUILDING: Chờ...";
+            };
+
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === 'sensor-connected') {
@@ -203,22 +218,21 @@
                 if (data.type === 'sensor-data') processSensorData(data);
             };
 
-            initChart();
-            updateDropdowns();
-            updatePendulum();
-            requestAnimationFrame(draw3D);
+            ws.onclose = () => {
+                if (isReconnecting) return;
+                isReconnecting = true;
+                document.getElementById('status-g').innerHTML = "🔴 GROUND: Mất mạng";
+                document.getElementById('status-b').innerHTML = "🔴 BUILDING: Mất mạng";
+                setTimeout(connectWebSocket, 3000);
+            };
         }
 
-        // === TÍNH NĂNG MỚI: MÁY ĐẾM NHỊP (METRONOME) ===
         function toggleMetronome() {
             let btn = document.getElementById('btn-metronome');
             if (metronomeInterval) {
-                clearInterval(metronomeInterval);
-                metronomeInterval = null;
-                btn.innerText = "🎵 Bật máy đếm nhịp";
-                btn.style.background = "#8b5cf6";
+                clearInterval(metronomeInterval); metronomeInterval = null;
+                btn.innerText = "🎵 Bật máy đếm nhịp"; btn.style.background = "#8b5cf6";
             } else {
-                // Lấy tần số lý thuyết để làm nhịp
                 let fTMD = parseFloat(document.getElementById('f-tmd').innerText) || 1;
                 if (fTMD <= 0) return alert("Vui lòng nhập chiều dài con lắc hợp lệ!");
                 
@@ -226,33 +240,22 @@
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
                 metronomeInterval = setInterval(() => {
-                    // Tạo tiếng "tách" bằng Web Audio API
-                    let osc = audioCtx.createOscillator();
-                    let gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+                    let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                    osc.connect(gain); gain.connect(audioCtx.destination);
                     osc.frequency.value = 800;
                     gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
                 }, intervalMs);
                 
-                btn.innerText = `⏹ Tắt nhịp (${fTMD.toFixed(2)} Hz)`;
-                btn.style.background = "#ef4444";
+                btn.innerText = `⏹ Tắt nhịp (${fTMD.toFixed(2)} Hz)`; btn.style.background = "#ef4444";
             }
         }
 
-        // === TÍNH NĂNG MỚI: HIỆU CHUẨN VỀ 0 ===
         function calibrate() {
-            gravityG.initialized = false;
-            gravityB.initialized = false;
-            smooth3D = {x: 0, y: 0, z: 0};
-            smoothMag = 0;
-            trail = [];
-            chart.data.labels = [];
-            chart.data.datasets[0].data = [];
-            chart.data.datasets[1].data = [];
+            gravityG.initialized = false; gravityB.initialized = false;
+            smooth3D = {x: 0, y: 0, z: 0}; smoothMag = 0; trail = [];
+            chart.data.labels = []; chart.data.datasets[0].data = []; chart.data.datasets[1].data = [];
             chart.update();
             alert("Đã hiệu chuẩn cảm biến! Mốc 0 đã được thiết lập lại.");
         }
@@ -260,8 +263,7 @@
         function initChart() {
             const ctx = document.getElementById('liveChart').getContext('2d');
             let gradientB = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientB.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
-            gradientB.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+            gradientB.addColorStop(0, 'rgba(239, 68, 68, 0.5)'); gradientB.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
             
             chart = new Chart(ctx, {
                 type: 'line',
@@ -278,9 +280,7 @@
             if (L > 0) {
                 let f = (1 / (2 * Math.PI)) * Math.sqrt(9.81 / L);
                 document.getElementById('f-tmd').innerText = f.toFixed(2);
-                if (metronomeInterval) { // Cập nhật lại nhịp nếu đang bật
-                    toggleMetronome(); toggleMetronome();
-                }
+                if (metronomeInterval) { toggleMetronome(); toggleMetronome(); }
             }
             checkResonance();
         }
@@ -297,11 +297,9 @@
             errorDiv.innerText = `Sai số tần số: ${(diffPercent * 100).toFixed(1)}%`;
 
             if (diffPercent < 0.15) {
-                badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!";
-                badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
+                badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!"; badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
             } else {
-                badge.innerText = "CHƯA CỘNG HƯỞNG";
-                badge.style.background = "#ef4444"; badge.style.boxShadow = "none";
+                badge.innerText = "CHƯA CỘNG HƯỞNG"; badge.style.background = "#ef4444"; badge.style.boxShadow = "none";
             }
         }
 
@@ -406,7 +404,7 @@
             document.getElementById('btn-pause').innerText = isPaused ? "Tiếp tục" : "Tạm dừng";
         }
 
-        function stopRecord() {
+        async function stopRecord() {
             isRecording = false; isPaused = false;
             document.getElementById('btn-record').disabled = false;
             document.getElementById('btn-pause').disabled = true;
@@ -428,6 +426,21 @@
             });
             localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
             updateDropdowns();
+            
+            // GỬI DỮ LIỆU LÊN SERVER ĐỂ TẠO FILE CSV
+            try {
+                let res = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ GROUND: dataGround, BUILDING: dataBuilding })
+                });
+                let result = await res.json();
+                if(result.ok) {
+                    alert("Đã lưu phiên đo và tạo file CSV trên máy chủ!");
+                }
+            } catch (e) {
+                console.log("Lỗi lưu file lên server.");
+            }
         }
 
         function deleteSession() {
@@ -558,7 +571,7 @@
             canvas3d.width = box.clientWidth - 20; canvas3d.height = box.clientHeight - 20;
         }
 
-        function exportCSV() {
+        function exportLocalCSV() {
             if (dataBuilding.length === 0) return alert("Chưa có dữ liệu để xuất!");
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             csvContent += "ThoiGian(s),GROUND(m/s2),BUILDING(m/s2)\n";
