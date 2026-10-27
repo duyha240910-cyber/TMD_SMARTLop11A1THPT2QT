@@ -49,6 +49,9 @@
         .btn-stop { background: var(--danger); color: white; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); font-size: 18px; }
         .btn:disabled { opacity: 0.5; box-shadow: none; transform: none; }
         .btn-start:active:not(:disabled) { transform: scale(0.96); }
+
+        /* Nút Fullscreen nhỏ gọn */
+        .btn-fullscreen { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-size: 12px; padding: 5px 10px; width: auto; position: absolute; top: 20px; right: 20px; z-index: 10;}
     </style>
 </head>
 <body>
@@ -75,6 +78,7 @@
     </div>
 
     <div id="main-screen">
+        <button class="btn btn-fullscreen" onclick="toggleFullScreen()">Toàn màn hình</button>
         <div class="header">
             <div class="room-badge">PHÒNG: <span id="display-room"></span></div>
             <div id="role-badge" class="role-badge">ROLE</div>
@@ -98,16 +102,26 @@
     <script>
         let ws, isMeasuring = false, lastTime = 0, currentRoom = "", currentRole = "";
 
-        // TỰ ĐỘNG ĐIỀN MÃ PHÒNG TỪ QR CODE (Nếu có)
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const roomParam = urlParams.get('room');
             if (roomParam) {
                 document.getElementById('input-room').value = roomParam.toUpperCase();
-                // Hiệu ứng nháy xanh để báo hiệu đã nhận mã
                 document.getElementById('input-room').style.borderColor = '#10b981';
             }
         };
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Lỗi không thể bật toàn màn hình: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
 
         function joinRoom() {
             currentRoom = document.getElementById('input-room').value.trim().toUpperCase();
