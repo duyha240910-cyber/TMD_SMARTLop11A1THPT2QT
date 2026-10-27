@@ -18,13 +18,10 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            color: var(--text-main);
-            margin: 0; padding: 20px;
-            min-height: 100vh;
+            color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh;
         }
         .container { max-width: 1300px; margin: auto; }
         
-        /* Header */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--card-bg); backdrop-filter: blur(10px);
@@ -34,10 +31,8 @@
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
-        /* Grid Layout */
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
         
-        /* Cards */
         .card {
             background: var(--card-bg); backdrop-filter: blur(10px);
             border-radius: 20px; padding: 25px;
@@ -47,18 +42,16 @@
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
-        /* Metric Rings */
         .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
         .metric-label { font-size: 15px; color: var(--text-muted); font-weight: 600;}
         .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
         .val-ground { color: var(--ground-color); }
         .val-building { color: var(--building-color); }
 
-        /* Buttons */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .btn {
             padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px;
-            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
@@ -66,19 +59,17 @@
         .btn-danger { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
         .btn-danger:hover:not(:disabled) { background: #dc2626; transform: scale(1.02); }
         .btn-export { background: #10b981; color: white; }
+        .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 8px; }
 
-        /* Chart */
         #chart-container { grid-column: span 2; height: 400px; position: relative;}
 
-        /* Resonance Box */
         .resonance-box { background: #f8fafc; border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed #cbd5e1; }
         .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 16px; width: 100px; text-align: center; font-weight: bold;}
         .badge-res { margin-top: 15px; padding: 12px; border-radius: 12px; font-weight: 800; color: white; background: #94a3b8; font-size: 15px; transition: 0.3s;}
+        .error-text { font-size: 13px; color: var(--text-muted); margin-top: 5px; font-weight: 600;}
 
-        /* Select */
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none;}
-
-        /* Login Screen */
+        
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #1e1b4b, #312e81);
@@ -87,8 +78,7 @@
         .login-card {
             background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
             padding: 50px; border-radius: 30px; text-align: center; color: white;
-            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            width: 400px;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px;
         }
         .login-card input {
             width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px;
@@ -109,7 +99,6 @@
     </style>
 </head>
 <body>
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
@@ -130,42 +119,39 @@
         </div>
 
         <div class="grid-layout">
-            <!-- Cột 1: GROUND -->
-            <div class="card">
+            <div class="card no-print">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
                 <div class="metric-row"><span class="metric-label">Tần số f</span><span class="metric-value val-ground" id="g-freq">0.00</span></div>
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
-            <!-- Cột 2: BUILDING -->
-            <div class="card" style="border-left: 4px solid var(--building-color);">
+            <div class="card no-print" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
                 <div class="metric-row"><span class="metric-label">Tần số f</span><span class="metric-value val-building" id="b-freq">0.00</span></div>
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-building" id="b-period">0.00</span></div>
             </div>
 
-            <!-- Cột 3: Điều khiển & Con lắc -->
-            <div class="card">
-                <div class="card-title">Bảng điều khiển TMD</div>
+            <div class="card no-print">
+                <div class="card-title">Trạm Con lắc TMD</div>
                 <div class="resonance-box">
-                    <label style="font-weight:600; font-size: 14px;">Chiều dài con lắc L (m)</label><br><br>
+                    <label style="font-weight:600; font-size: 14px;">Chiều dài L (m)</label><br><br>
                     <input type="number" id="input-L" value="0.25" step="0.01" oninput="updatePendulum()">
                     <p style="margin: 10px 0; font-weight: 600; color: var(--primary);">f lý thuyết: <span id="f-tmd">0.00</span> Hz</p>
                     <div id="resonance-badge" class="badge-res">CHƯA ĐO</div>
+                    <div id="error-calc" class="error-text"></div>
                 </div>
             </div>
 
-            <!-- Biểu đồ (Chiếm 2 cột) -->
-            <div class="card" id="chart-container" style="grid-column: span 2;">
+            <div class="card no-print" id="chart-container" style="grid-column: span 2;">
                 <canvas id="liveChart"></canvas>
+                <button class="btn btn-primary btn-sm" onclick="downloadChart('liveChart')" style="position:absolute; top:20px; right:20px;">Tải ảnh đồ thị</button>
             </div>
 
-            <!-- Điều khiển & So sánh (Chiếm 1 cột) -->
             <div class="card no-print">
                 <div class="btn-group">
-                    <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Bắt đầu ghi</button>
+                    <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Ghi dữ liệu</button>
                     <button class="btn btn-primary" id="btn-pause" onclick="togglePause()" disabled style="background:#f59e0b;">Tạm dừng</button>
                     <button class="btn btn-danger" id="btn-stop" onclick="stopRecord()" disabled>Dừng</button>
                 </div>
@@ -174,16 +160,21 @@
                 <hr style="border: 1px solid #e2e8f0; margin-bottom: 20px;">
                 
                 <div class="card-title">So sánh hiệu quả</div>
-                <select id="sel-1"><option value="">-- Chọn phiên Không TMD --</option></select>
-                <select id="sel-2"><option value="">-- Chọn phiên Có TMD --</option></select>
-                <button class="btn btn-primary" onclick="compareSessions()" style="width: 100%;">Tính toán so sánh</button>
+                <div style="display:flex; gap:5px; margin-bottom:15px;">
+                    <select id="sel-1" style="margin-bottom:0;"><option value="">-- Chọn Không TMD --</option></select>
+                    <select id="sel-2" style="margin-bottom:0;"><option value="">-- Chọn Có TMD --</option></select>
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn btn-primary" onclick="compareSessions()" style="flex:2;">Tính toán</button>
+                    <button class="btn btn-danger" onclick="deleteSession()" style="flex:1;" title="Xóa phiên đang chọn">Xóa</button>
+                </div>
                 <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF</button>
             </div>
 
-            <!-- Kết quả so sánh -->
             <div class="card" id="compare-result" style="display:none; grid-column: span 2;"></div>
-            <div class="card" id="compare-chart-container" style="display:none; grid-column: span 1; height: 300px;">
+            <div class="card" id="compare-chart-container" style="display:none; grid-column: span 1; height: 300px; position:relative;">
                 <canvas id="overlayChart"></canvas>
+                <button class="btn btn-primary btn-sm" onclick="downloadChart('overlayChart')" style="position:absolute; top:20px; right:20px;">Tải ảnh đồ thị</button>
             </div>
         </div>
     </div>
@@ -201,11 +192,8 @@
         let lastTimestamp = 0;
         let calculatedSampleRate = 30;
 
-        // KHỞI TẠO ĐỒ THỊ ĐẸP MẮT
         function initChart() {
             const ctx = document.getElementById('liveChart').getContext('2d');
-            
-            // Tạo màu Gradient cho biểu đồ
             let gradientB = ctx.createLinearGradient(0, 0, 0, 400);
             gradientB.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
             gradientB.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
@@ -239,8 +227,8 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === 'sensor-connected') {
-                    if (data.role === 'GROUND') document.getElementById('status-g').innerHTML = "🟢 GROUND: Đã kết nối";
-                    if (data.role === 'BUILDING') document.getElementById('status-b').innerHTML = "🟢 BUILDING: Đã kết nối";
+                    if (data.role === 'GROUND') document.getElementById('status-g').innerHTML = "🟢 GROUND: Kết nối";
+                    if (data.role === 'BUILDING') document.getElementById('status-b').innerHTML = "🟢 BUILDING: Kết nối";
                 }
                 if (data.type === 'sensor-data') processSensorData(data);
             };
@@ -256,16 +244,28 @@
                 let f = (1 / (2 * Math.PI)) * Math.sqrt(9.81 / L);
                 document.getElementById('f-tmd').innerText = f.toFixed(2);
             }
+            checkResonance();
         }
 
+        // === TÍNH SAI SỐ VẬT LÝ ===
         function checkResonance() {
             let fTMD = parseFloat(document.getElementById('f-tmd').innerText);
             let fBuilding = parseFloat(document.getElementById('b-freq').innerText);
             let badge = document.getElementById('resonance-badge');
+            let errorDiv = document.getElementById('error-calc');
 
-            if (fBuilding === 0) { badge.innerText = "CHƯA ĐO"; badge.style.background = "#94a3b8"; return; }
+            if (fBuilding === 0) { 
+                badge.innerText = "CHƯA ĐO"; badge.style.background = "#94a3b8"; 
+                errorDiv.innerText = "";
+                return; 
+            }
+            
             let diffPercent = Math.abs(fTMD - fBuilding) / fTMD;
-            if (diffPercent < 0.15) {
+            
+            // Hiển thị sai số
+            errorDiv.innerText = `Sai số tần số: ${(diffPercent * 100).toFixed(1)}%`;
+
+            if (diffPercent < 0.15) { // Sai số dưới 15% coi như cộng hưởng
                 badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!";
                 badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
             } else {
@@ -358,16 +358,40 @@
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('btn-stop').disabled = true;
             
-            let name = prompt("Nhập tên phiên (VD: Khong_TMD):");
-            if (!name) return;
+            let state = prompt("Chọn trạng thái TMD:\n1. Không có TMD\n2. Có TMD (Tự do)\n3. TMD Bị khóa");
+            let name = "";
+            if (state === "1") name = "Không TMD";
+            else if (state === "2") name = "Có TMD";
+            else if (state === "3") name = "TMD Khóa";
+            else return; // Hủy bỏ
             
             let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
             saved.push({ 
-                name, ampB: calculateAmplitude(dataBuilding), freqB: calculateFrequency(dataBuilding, calculatedSampleRate),
+                name: name + " (" + new Date().toLocaleTimeString('vi-VN') + ")",
+                ampB: calculateAmplitude(dataBuilding), 
+                freqB: calculateFrequency(dataBuilding, calculatedSampleRate),
                 chartData: dataBuilding.filter((_, index) => index % Math.ceil(dataBuilding.length / 300) === 0)
             });
             localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
             updateDropdowns();
+        }
+
+        // === XÓA PHIÊN ĐO LỖI ===
+        function deleteSession() {
+            let i1 = document.getElementById('sel-1').value;
+            let i2 = document.getElementById('sel-2').value;
+            if (i1 === "" && i2 === "") return alert("Vui lòng chọn một phiên ở ô drop-down để xóa!");
+            
+            let delIndex = (i2 !== "") ? i2 : i1;
+            let saved = JSON.parse(localStorage.getItem('tmd_sessions_' + currentRoom)) || [];
+            
+            if(confirm(`Bạn có chắc muốn xóa phiên "${saved[delIndex].name}"?`)) {
+                saved.splice(delIndex, 1);
+                localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
+                updateDropdowns();
+                document.getElementById('compare-result').style.display = 'none';
+                document.getElementById('compare-chart-container').style.display = 'none';
+            }
         }
 
         function updateDropdowns() {
@@ -393,12 +417,12 @@
                 <h2 style="margin-top:0; color:var(--primary);">KẾT QUẢ PHÂN TÍCH TMD</h2>
                 <div style="display:flex; justify-content:space-between; margin-top:20px;">
                     <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1; margin-right:10px;">
-                        <div style="color:#64748b; font-weight:bold;">KHÔNG TMD (${s1.name})</div>
+                        <div style="color:#64748b; font-weight:bold;">${s1.name}</div>
                         <div style="font-size:24px; font-weight:800;">A = ${s1.ampB.toFixed(3)} <span style="font-size:14px; color:#64748b;">m/s²</span></div>
                         <div style="color:#64748b;">Tần số: ${s1.freqB.toFixed(2)} Hz</div>
                     </div>
                     <div style="background:#f8fafc; padding:15px; border-radius:12px; flex:1;">
-                        <div style="color:#64748b; font-weight:bold;">CÓ TMD (${s2.name})</div>
+                        <div style="color:#64748b; font-weight:bold;">${s2.name}</div>
                         <div style="font-size:24px; font-weight:800;">A = ${s2.ampB.toFixed(3)} <span style="font-size:14px; color:#64748b;">m/s²</span></div>
                         <div style="color:#64748b;">Tần số: ${s2.freqB.toFixed(2)} Hz</div>
                     </div>
@@ -415,11 +439,20 @@
             overlayChart = new Chart(ctx, {
                 type: 'line',
                 data: { labels: Array(Math.max(s1.chartData.length, s2.chartData.length)).fill(''), datasets: [
-                    { label: 'Không TMD', data: s1.chartData, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 },
-                    { label: 'Có TMD', data: s2.chartData, borderColor: '#10b981', borderWidth: 2, pointRadius: 0 }
+                    { label: s1.name, data: s1.chartData, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0 },
+                    { label: s2.name, data: s2.chartData, borderColor: '#10b981', borderWidth: 2, pointRadius: 0 }
                 ]},
                 options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom' } } }
             });
+        }
+
+        // === TÍNH NĂNG MỚI: TẢI ĐỒ THỊ THÀNH ẢNH ===
+        function downloadChart(chartId) {
+            let canvas = document.getElementById(chartId);
+            let link = document.createElement('a');
+            link.download = `${chartId}_${currentRoom}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
 
         function exportCSV() {
