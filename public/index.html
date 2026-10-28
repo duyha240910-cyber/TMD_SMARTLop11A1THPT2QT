@@ -122,7 +122,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Performance Optimized</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Bug Fixed Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -282,7 +282,7 @@
         const canvas3d = document.getElementById('canvas3d'), ctx3d = canvas3d.getContext('2d');
         let angleX = -0.5, angleY = 0.5, trail = [];
         const maxTrail = 50;
-        const scale3D = 300; // TĂNG HỆ SỐ PHÓNG ĐẠI LÊN 300 ĐỂ DỄ NHÌN
+        const scale3D = 300; // Phóng đại 3D
         let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
 
         let metronomeInterval = null, audioCtx = null;
@@ -332,8 +332,14 @@
             smoothAlpha = val / 100;
         }
 
+        // ĐÃ VÁ LỖI: Xử lý nhập liệu âm, chữ, hoặc xóa trắng
         function updateThreshold() {
-            alertThreshold = parseFloat(document.getElementById('threshold-input').value) || 5.0;
+            let val = parseFloat(document.getElementById('threshold-input').value);
+            if (!isNaN(val) && val > 0) {
+                alertThreshold = val;
+            } else {
+                alertThreshold = 5.0;
+            }
         }
 
         function joinRoom() {
@@ -352,7 +358,6 @@
                 width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
 
-            // TRÌ HOÃN RESIZE VÀ DRAW 3D ĐỂ ĐẢM BẢO DOM ĐÃ SẴN SÀNG
             setTimeout(() => {
                 resizeCanvas();
                 requestAnimationFrame(draw3D);
@@ -452,11 +457,17 @@
             }
         }
 
+        // ĐÃ VÁ LỖI: Tắt báo động khi hiệu chuẩn
         function calibrate() {
             gravityG.initialized = false; gravityB.initialized = false;
             smooth3D = {x: 0, y: 0, z: 0}; smoothMag = 0; trail = [];
             chart.data.labels = []; chart.data.datasets[0].data = []; chart.data.datasets[1].data = [];
             chart.update();
+            
+            isAlerting = false;
+            document.body.classList.remove('alert-mode');
+            document.getElementById('b-amp').classList.remove('danger');
+
             alert("Đã hiệu chuẩn cảm biến! Mốc 0 đã được thiết lập lại.");
         }
 
@@ -547,7 +558,7 @@
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.data.datasets[1].data.push(smoothMag); // FIX TYPO
+                    chart.data.datasets[1].data.push(smoothMag);
                     
                     smooth3D.x = smooth3D.x * smoothAlpha + f.x * (1 - smoothAlpha);
                     smooth3D.y = smooth3D.y * smoothAlpha + f.y * (1 - smoothAlpha);
@@ -650,7 +661,7 @@
                     isAlerting = true; 
                     document.body.classList.add('alert-mode'); 
                     document.getElementById('b-amp').classList.add('danger'); 
-                    beepAudio.play(); 
+                    beepAudio.play().catch(e => {}); 
                     speak("Cảnh báo! Tòa nhà dao động quá mạnh.");
                 }
             } else {
@@ -663,10 +674,16 @@
             checkResonance();
         }
 
+        // ĐÃ VÁ LỖI: Reset báo động khi bắt đầu ghi phiên mới
         function startRecord() {
             dataGround = []; dataBuilding = []; trail = [];
             smooth3D = {x: 0, y: 0, z: 0}; smoothMag = 0;
             isRecording = true; isPaused = false;
+            
+            isAlerting = false;
+            document.body.classList.remove('alert-mode');
+            document.getElementById('b-amp').classList.remove('danger');
+
             document.getElementById('btn-record').disabled = true;
             document.getElementById('btn-pause').disabled = false;
             document.getElementById('btn-stop').disabled = false;
