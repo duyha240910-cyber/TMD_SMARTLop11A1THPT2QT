@@ -3,40 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <title>TMD SMART - Ultimate Dashboard</title>
+    <!-- Thư viện vẽ đồ thị 2D -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thư viện tạo mã QR -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Font chữ -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* KHAI BÁO BIẾN MÀU SẮC (HỖ TRỢ DARK/LIGHT MODE) */
         :root {
-            --bg: #f4f7f6;
+            --bg: #f4f7f6; 
             --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --text-main: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #1e293b; 
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --primary: #4f46e5;
-            --ground-color: #3b82f6;
+            --border-color: #e2e8f0; 
+            --primary: #4f46e5; 
+            --ground-color: #3b82f6; 
             --building-color: #ef4444;
         }
-
         body.dark-mode {
-            --bg: #0f172a;
+            --bg: #0f172a; 
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.85);
-            --text-main: #f8fafc;
+            --card-bg: rgba(30, 41, 59, 0.85); 
+            --text-main: #f8fafc; 
             --text-muted: #94a3b8;
-            --border-color: #334155;
+            --border-color: #334155; 
             --primary: #818cf8;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s, color 0.3s; }
-        body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
-        @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
+        body {
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-gradient); 
+            color: var(--text-main);
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            transition: background 0.3s, color 0.3s;
+        }
 
-        .container { max-width: 1400px; margin: auto; transition: max-width 0.3s; }
-        
-        /* CHẾ ĐỘ TRÌNH CHIẾU (PRESENTATION MODE) */
+        body.alert-mode {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            animation: pulseBg 0.5s infinite alternate;
+        }
+        @keyframes pulseBg {
+            from { filter: brightness(1); }
+            to { filter: brightness(0.9); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            transition: max-width 0.3s;
+        }
+
+        /* --- CHẾ ĐỘ TRÌNH CHIẾU --- */
         body.presentation-mode .no-print { display: none !important; }
         body.presentation-mode .container { max-width: 1800px; }
         body.presentation-mode .grid-layout { grid-template-columns: 1fr 1fr; }
@@ -45,15 +66,27 @@
         body.presentation-mode .metric-value { font-size: 48px; }
         body.presentation-mode .card-title { font-size: 24px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-color);}
+        /* --- HEADER --- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            padding: 15px 30px; border-radius: 20px; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
+        /* --- GRID LAYOUT --- */
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; border: 1px solid var(--border-color);}
+        .card {
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 25px; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease;
+        }
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
+        /* --- METRICS --- */
         .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);}
         .metric-label { font-size: 15px; color: var(--text-muted); font-weight: 600;}
         .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; transition: color 0.3s, font-size 0.3s; }
@@ -61,8 +94,13 @@
         .val-building { color: var(--building-color); }
         .val-building.danger { color: #dc2626; text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
+        /* --- BUTTONS --- */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn {
+            padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px;
+            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
         .btn-primary:hover:not(:disabled) { background: #4338ca; transform: scale(1.02); }
@@ -72,12 +110,14 @@
         .btn-metronome { background: #8b5cf6; color: white; }
         .btn-darkmode { background: #334155; color: white; }
 
+        /* --- CHARTS & 3D --- */
         #liveChart-container { grid-column: span 2; height: 350px; position: relative; transition: height 0.3s;}
         #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab; transition: height 0.3s;}
         #canvas3d-container:active { cursor: grabbing; }
         #canvas3d { width: 100%; height: 100%; display: block;}
         .canvas-hint { position: absolute; bottom: 15px; right: 20px; color: #94a3b8; font-size: 13px; font-weight: 600; pointer-events: none;}
 
+        /* --- FORM & INPUT --- */
         .resonance-box { background: var(--bg); border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed var(--border-color); transition: background 0.3s;}
         .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; width: 100px; text-align: center; font-weight: bold; background: var(--card-bg); color: var(--text-main);}
         .badge-res { margin-top: 15px; padding: 12px; border-radius: 12px; font-weight: 800; color: white; background: #94a3b8; font-size: 15px; transition: 0.3s;}
@@ -86,20 +126,37 @@
         #qrcode-box { text-align: center; margin-top: 10px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 12px; width: fit-content; margin-left: auto; margin-right: auto;}
         select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 15px; outline: none; background: var(--card-bg); color: var(--text-main);}
         
+        .slider-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; font-weight: 600;}
+        input[type="range"] { flex: 1; cursor: pointer; }
+
+        /* --- LOGIN SCREEN --- */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; z-index: 999; }
         .login-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 30px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px; }
         .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
         .login-card button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px; background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
         .login-card button:hover { background: #4338ca; }
 
-        @media print { body { background: white; color: black; } .no-print, #login-screen { display: none !important; } .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; } }
+        /* --- PRINT REPORT --- */
+        #print-report { display: none; }
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .no-print, #login-screen, .header, #liveChart-container, #canvas3d-container, #compare-chart-container { display: none !important; }
+            .container { max-width: 100%; }
+            .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; background: white; color: black;}
+            .grid-layout { display: block; }
+            #print-report { display: block !important; margin-top: 20px;}
+            .print-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px;}
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px;}
+            .print-table th, .print-table td { border: 1px solid black; padding: 10px; text-align: left;}
+        }
     </style>
 </head>
 <body>
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Enterprise Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Final Ultimate Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -112,12 +169,13 @@
                 <span id="status-g" style="font-weight:bold; color:#64748b; margin-right: 15px;">GROUND: Chờ...</span>
                 <span id="status-b" style="font-weight:bold; color:#64748b; margin-right: 15px;">BUILDING: Chờ...</span>
                 <span class="room-badge">Phòng: <span id="display-room"></span></span>
-                <button class="btn btn-darkmode" onclick="toggleDarkMode()" style="padding: 8px 12px; margin-left: 10px;">🌙 Đổi màu nền</button>
+                <button class="btn btn-darkmode" onclick="toggleDarkMode()" style="padding: 8px 12px; margin-left: 10px;">🌙 Nền</button>
                 <button class="btn btn-primary" onclick="togglePresentation()" style="padding: 8px 12px;">📺 Trình chiếu</button>
             </div>
         </div>
 
         <div class="grid-layout">
+            <!-- BẢNG GROUND -->
             <div class="card">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
@@ -125,6 +183,7 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
+            <!-- BẢNG BUILDING -->
             <div class="card" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
@@ -132,6 +191,7 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-building" id="b-period">0.00</span></div>
             </div>
 
+            <!-- TRẠM KẾT NỐI -->
             <div class="card no-print">
                 <div class="card-title">Trạm kết nối & Con lắc</div>
                 <div id="qrcode-box"></div>
@@ -145,10 +205,12 @@
                 </div>
             </div>
 
+            <!-- ĐỒ THỊ 2D -->
             <div class="card" id="liveChart-container">
                 <canvas id="liveChart"></canvas>
             </div>
 
+            <!-- BẢNG ĐIỀU KHIỂN -->
             <div class="card no-print">
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Ghi dữ liệu</button>
@@ -161,11 +223,25 @@
                     <button class="btn btn-export" onclick="calibrate()" style="background: #3b82f6;">⚖️ Hiệu chuẩn (Về 0)</button>
                 </div>
 
-                <button class="btn btn-export" onclick="exportLocalCSV()" style="width: 100%; margin-bottom: 20px;">Tải File CSV Trực tiếp</button>
+                <div class="card-title" style="margin-top: 20px;">Cài đặt xử lý tín hiệu</div>
+                <div class="slider-container">
+                    <span>Độ mượt:</span>
+                    <input type="range" id="smooth-slider" min="0" max="95" value="70" oninput="updateSmoothing()">
+                    <span id="smooth-val">70%</span>
+                </div>
+                <div class="slider-container">
+                    <span>Ngưỡng báo động:</span>
+                    <!-- ĐÃ THÊM SỰ KIỆN ONINPUT ĐỂ SỬA LỖI BỊ ĂN MẤT CODE -->
+                    <input type="number" id="threshold-input" value="5.0" step="0.5" oninput="updateThreshold()" style="width: 60px; padding: 5px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main);">
+                    <span>m/s²</span>
+                </div>
+
+                <button class="btn btn-export" onclick="exportLocalCSV()" style="width: 100%; margin-bottom: 20px; margin-top: 10px;">Tải File CSV Trực tiếp</button>
                 
                 <hr style="border: 1px solid var(--border-color); margin-bottom: 20px;">
                 
                 <div class="card-title">So sánh hiệu quả</div>
+                <div id="best-record-text" style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600;">Kỷ lục giảm chấn: --</div>
                 <div style="display:flex; gap:5px; margin-bottom:15px;">
                     <select id="sel-1" style="margin-bottom:0;"><option value="">-- Chọn Không TMD --</option></select>
                     <select id="sel-2" style="margin-bottom:0;"><option value="">-- Chọn Có TMD --</option></select>
@@ -174,18 +250,59 @@
                     <button class="btn btn-primary" onclick="compareSessions()" style="flex:2;">Tính toán</button>
                     <button class="btn btn-danger" onclick="deleteSession()" style="flex:1;" title="Xóa phiên đang chọn">Xóa</button>
                 </div>
-                <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF</button>
+                <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF Báo Cáo</button>
             </div>
 
+            <!-- KẾT QUẢ SO SÁNH -->
             <div class="card" id="compare-result" style="display:none; grid-column: span 2;"></div>
+            
+            <!-- ĐỒ THỊ CHỒNG -->
             <div class="card" id="compare-chart-container" style="display:none; grid-column: span 3; height: 300px; position:relative;">
                 <canvas id="overlayChart"></canvas>
             </div>
 
-            <div class="card" id="canvas3d-container">
+            <!-- ĐỒ THỊ 3D -->
+            <div class="card no-print" id="canvas3d-container">
                 <canvas id="canvas3d"></canvas>
                 <div class="canvas-hint no-print">Giữ chuột trái để xoay không gian 3D</div>
             </div>
+
+            <!-- KHUNG BÁO CÁO IN PDF (ẨN TRÊN WEB, CHỈ HIỆN KHI IN) -->
+            <div id="print-report">
+                <div class="print-header">
+                    <h2>BÁO CÁO THÍ NGHIỆM VẬT LÝ 11 - TMD SMART</h2>
+                    <p>Mã phòng: <b id="print-room"></b> | Ngày đo: <b id="print-date"></b></p>
+                </div>
+                <p><b>1. Thông số con lắc TMD:</b> Chiều dài L = <span id="print-L"></span> m | Tần số riêng f = <span id="print-fTMD"></span> Hz</p>
+                <p><b>2. Kết quả đo đạc:</b></p>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>Trạng thái</th>
+                            <th>Biên độ A (m/s²)</th>
+                            <th>Tần số f (Hz)</th>
+                            <th>Chu kỳ T (s)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="print-table-body">
+                        <!-- Dữ liệu sẽ được điền tự động bằng JS -->
+                    </tbody>
+                </table>
+                <br>
+                <p><b>3. Kết luận:</b> <span id="print-conclusion" style="font-weight: bold; font-size: 18px; color: #dc2626;"></span></p>
+                <br><br>
+                <div style="display:flex; justify-content: space-between;">
+                    <div style="text-align: center;">
+                        <p>Người thực hiện</p>
+                        <p style="margin-top: 50px;">(Ký và ghi rõ họ tên)</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <p>Giáo viên hướng dẫn</p>
+                        <p style="margin-top: 50px;">(Ký và ghi rõ họ tên)</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -194,10 +311,15 @@
         let chart, overlayChart;
         let dataGround = [], dataBuilding = [];
         let gravityG = {x: 0, y: 0, z: 0, initialized: false}, gravityB = {x: 0, y: 0, z: 0, initialized: false};
-        const alpha = 0.95;
+        
+        // Cấu hình bộ lọc
+        let alpha = 0.95; 
+        let smoothAlpha = 0.7; 
+        let alertThreshold = 5.0;
+        
         let lastTimestamp = 0, calculatedSampleRate = 30;
         let isAlerting = false;
-        const ALERT_THRESHOLD = 5.0, beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        const beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
         // Cấu hình 3D
         const canvas3d = document.getElementById('canvas3d'), ctx3d = canvas3d.getContext('2d');
@@ -205,11 +327,10 @@
         const maxTrail = 50, scale3D = 40;
         let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
 
-        // Cấu hình Metronome & Reconnect
+        // Cấu hình kết nối & metronome
         let metronomeInterval = null, audioCtx = null;
         let isReconnecting = false;
 
-        // TỰ ĐỘNG LƯU CẤU HÌNH
         window.onload = () => {
             let savedRoom = localStorage.getItem('tmd_last_room');
             let savedL = localStorage.getItem('tmd_last_L');
@@ -228,16 +349,24 @@
 
         function togglePresentation() {
             document.body.classList.toggle('presentation-mode');
-            // Đợi CSS chuyển đổi xong mới resize canvas
             setTimeout(resizeCanvas, 350);
+        }
+
+        function updateSmoothing() {
+            let val = document.getElementById('smooth-slider').value;
+            document.getElementById('smooth-val').innerText = val + "%";
+            smoothAlpha = val / 100;
+        }
+
+        // HÀM ĐÃ BỊ THIẾU SỰ KIỆN KẾT NỐI TRONG BẢN TRƯỚC, GIỜ ĐÃ KHÔI PHỤC
+        function updateThreshold() {
+            alertThreshold = parseFloat(document.getElementById('threshold-input').value) || 5.0;
         }
 
         function joinRoom() {
             let room = document.getElementById('input-room').value.trim().toUpperCase();
             if (!room) return alert("Nhập mã phòng!");
             currentRoom = room;
-            
-            // Lưu mã phòng vào máy để lần sau mở lên không cần gõ lại
             localStorage.setItem('tmd_last_room', currentRoom);
 
             document.getElementById('login-screen').style.display = 'none';
@@ -340,7 +469,7 @@
         function updatePendulum() {
             let L = parseFloat(document.getElementById('input-L').value);
             if (L > 0) {
-                localStorage.setItem('tmd_last_L', L); // Lưu chiều dài L
+                localStorage.setItem('tmd_last_L', L);
                 let f = (1 / (2 * Math.PI)) * Math.sqrt(9.81 / L);
                 document.getElementById('f-tmd').innerText = f.toFixed(2);
                 if (metronomeInterval) { toggleMetronome(); toggleMetronome(); }
@@ -388,7 +517,8 @@
                 if (!isPaused) { chart.data.datasets[0].data.push(f.mag); chart.data.datasets[1].data.push(null); }
             } else {
                 let f = applyHighPass(data, gravityB);
-                smoothMag = smoothMag * 0.7 + f.mag * 0.3; 
+                
+                smoothMag = smoothMag * smoothAlpha + f.mag * (1 - smoothAlpha); 
                 
                 if (isRecording) dataBuilding.push(smoothMag);
                 
@@ -396,9 +526,9 @@
                     chart.data.datasets[0].data.push(null); 
                     chart.data.datasets[1].data.push(smoothMag);
                     
-                    smooth3D.x = smooth3D.x * 0.8 + f.x * 0.2;
-                    smooth3D.y = smooth3D.y * 0.8 + f.y * 0.2;
-                    smooth3D.z = smooth3D.z * 0.8 + f.z * 0.2;
+                    smooth3D.x = smooth3D.x * smoothAlpha + f.x * (1 - smoothAlpha);
+                    smooth3D.y = smooth3D.y * smoothAlpha + f.y * (1 - smoothAlpha);
+                    smooth3D.z = smooth3D.z * smoothAlpha + f.z * (1 - smoothAlpha);
 
                     trail.push({ x: smooth3D.x, y: smooth3D.y, z: smooth3D.z });
                     if (trail.length > maxTrail) trail.shift();
@@ -445,7 +575,7 @@
             document.getElementById('b-freq').innerText = fB.toFixed(2);
             document.getElementById('b-period').innerText = fB > 0 ? (1/fB).toFixed(2) : "0.00";
 
-            if (aB > ALERT_THRESHOLD) {
+            if (aB > alertThreshold) {
                 if (!isAlerting) { isAlerting = true; document.body.classList.add('alert-mode'); document.getElementById('b-amp').classList.add('danger'); beepAudio.play(); }
             } else {
                 if (isAlerting) { isAlerting = false; document.body.classList.remove('alert-mode'); document.getElementById('b-amp').classList.remove('danger'); }
@@ -485,12 +615,12 @@
                 name: name + " (" + new Date().toLocaleTimeString('vi-VN') + ")",
                 ampB: calculateAmplitude(dataBuilding), 
                 freqB: calculateFrequency(dataBuilding, calculatedSampleRate),
+                periodB: calculateFrequency(dataBuilding, calculatedSampleRate) > 0 ? (1/calculateFrequency(dataBuilding, calculatedSampleRate)) : 0,
                 chartData: dataBuilding.filter((_, index) => index % Math.ceil(dataBuilding.length / 300) === 0)
             });
             localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
             updateDropdowns();
             
-            // GỬI DỮ LIỆU LÊN SERVER ĐỂ TẠO FILE CSV
             try {
                 let res = await fetch('/api/save', {
                     method: 'POST',
@@ -498,12 +628,8 @@
                     body: JSON.stringify({ GROUND: dataGround, BUILDING: dataBuilding })
                 });
                 let result = await res.json();
-                if(result.ok) {
-                    alert("Đã lưu phiên đo và tạo file CSV trên máy chủ!");
-                }
-            } catch (e) {
-                console.log("Lỗi lưu file lên server.");
-            }
+                if(result.ok) { alert("Đã lưu phiên đo và tạo file CSV trên máy chủ!"); }
+            } catch (e) { console.log("Lỗi lưu file lên server."); }
         }
 
         function deleteSession() {
@@ -526,6 +652,17 @@
             saved.forEach((s, i) => html += `<option value="${i}">${s.name} (A: ${s.ampB.toFixed(3)})</option>`);
             document.getElementById('sel-1').innerHTML = html;
             document.getElementById('sel-2').innerHTML = html;
+            
+            let maxPercent = 0;
+            for(let i=0; i<saved.length; i++) {
+                for(let j=0; j<saved.length; j++) {
+                    if(i!==j && saved[i].name.includes("Không") && saved[j].name.includes("Có")) {
+                        let p = ((saved[i].ampB - saved[j].ampB) / saved[i].ampB) * 100;
+                        if(p > maxPercent) maxPercent = p;
+                    }
+                }
+            }
+            if(maxPercent > 0) document.getElementById('best-record-text').innerHTML = `🏆 Kỷ lục giảm chấn: <span style="color:#10b981; font-size:15px;">${maxPercent.toFixed(2)}%</span>`;
         }
 
         function compareSessions() {
@@ -570,6 +707,31 @@
                 ]},
                 options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { position: 'bottom', labels: { color: document.body.classList.contains('dark-mode') ? '#f8fafc' : '#1e293b' } } } }
             });
+
+            document.getElementById('print-room').innerText = currentRoom;
+            document.getElementById('print-date').innerText = new Date().toLocaleString('vi-VN');
+            document.getElementById('print-L').innerText = document.getElementById('input-L').value;
+            document.getElementById('print-fTMD').innerText = document.getElementById('f-tmd').innerText;
+            
+            document.getElementById('print-table-body').innerHTML = `
+                <tr>
+                    <td>${s1.name}</td>
+                    <td>${s1.ampB.toFixed(3)}</td>
+                    <td>${s1.freqB.toFixed(2)}</td>
+                    <td>${s1.periodB ? s1.periodB.toFixed(2) : '--'}</td>
+                </tr>
+                <tr>
+                    <td>${s2.name}</td>
+                    <td>${s2.ampB.toFixed(3)}</td>
+                    <td>${s2.freqB.toFixed(2)}</td>
+                    <td>${s2.periodB ? s2.periodB.toFixed(2) : '--'}</td>
+                </tr>
+            `;
+
+            let conclusion = percent > 0 
+                ? `TMD hoạt động hiệu quả, giúp giảm ${percent.toFixed(2)}% biên độ dao động của tòa nhà.`
+                : `TMD chưa hiệu quả (biên độ tăng ${Math.abs(percent).toFixed(2)}%). Cần tinh chỉnh lại chiều dài dây L để đạt cộng hưởng.`;
+            document.getElementById('print-conclusion').innerText = conclusion;
         }
 
         function project3D(x, y, z) {
