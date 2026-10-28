@@ -3,27 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <title>TMD SMART - Ultimate Dashboard</title>
+    <!-- Thư viện vẽ đồ thị 2D -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thư viện tạo mã QR -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Font chữ -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #f4f7f6; --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            --card-bg: rgba(255, 255, 255, 0.85); --text-main: #1e293b; --text-muted: #64748b;
-            --border-color: #e2e8f0; --primary: #4f46e5; --ground-color: #3b82f6; --building-color: #ef4444;
+            --bg: #f4f7f6; 
+            --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #1e293b; 
+            --text-muted: #64748b;
+            --border-color: #e2e8f0; 
+            --primary: #4f46e5; 
+            --ground-color: #3b82f6; 
+            --building-color: #ef4444;
         }
         body.dark-mode {
-            --bg: #0f172a; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.85); --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border-color: #334155; --primary: #818cf8;
+            --bg: #0f172a; 
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.85); 
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8;
+            --border-color: #334155; 
+            --primary: #818cf8;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s, color 0.3s; }
-        body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
-        @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
 
-        .container { max-width: 1400px; margin: auto; transition: max-width 0.3s; }
-        
+        body {
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-gradient); 
+            color: var(--text-main);
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.alert-mode {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            animation: pulseBg 0.5s infinite alternate;
+        }
+        @keyframes pulseBg {
+            from { filter: brightness(1); }
+            to { filter: brightness(0.9); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            transition: max-width 0.3s;
+        }
+
+        /* --- CHẾ ĐỘ TRÌNH CHIẾU --- */
         body.presentation-mode .no-print { display: none !important; }
         body.presentation-mode .container { max-width: 1800px; }
         body.presentation-mode .grid-layout { grid-template-columns: 1fr 1fr; }
@@ -32,15 +66,27 @@
         body.presentation-mode .metric-value { font-size: 48px; }
         body.presentation-mode .card-title { font-size: 24px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        /* --- HEADER --- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            padding: 15px 30px; border-radius: 20px; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
+        /* --- GRID LAYOUT --- */
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; }
+        .card {
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 25px; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease;
+        }
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
+        /* --- METRICS --- */
         .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);}
         .metric-label { font-size: 15px; color: var(--text-muted); font-weight: 600;}
         .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; transition: color 0.3s, font-size 0.3s; }
@@ -48,8 +94,13 @@
         .val-building { color: var(--building-color); }
         .val-building.danger { color: #dc2626; text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
+        /* --- BUTTONS --- */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn {
+            padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px;
+            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
         .btn-primary:hover:not(:disabled) { background: #4338ca; transform: scale(1.02); }
@@ -60,12 +111,14 @@
         .btn-darkmode { background: #334155; color: white; }
         .btn-simulate { background: #f59e0b; color: white; }
 
+        /* --- CHARTS & 3D --- */
         #liveChart-container { grid-column: span 2; height: 350px; position: relative; transition: height 0.3s;}
         #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab; transition: height 0.3s;}
         #canvas3d-container:active { cursor: grabbing; }
         #canvas3d { width: 100%; height: 100%; display: block;}
         .canvas-hint { position: absolute; bottom: 15px; right: 20px; color: #94a3b8; font-size: 13px; font-weight: 600; pointer-events: none;}
 
+        /* --- FORM & INPUT --- */
         .resonance-box { background: var(--bg); border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed var(--border-color); transition: background 0.3s;}
         .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; width: 100px; text-align: center; font-weight: bold; background: var(--card-bg); color: var(--text-main);}
         .badge-res { margin-top: 15px; padding: 12px; border-radius: 12px; font-weight: 800; color: white; background: #94a3b8; font-size: 15px; transition: 0.3s;}
@@ -77,6 +130,7 @@
         .slider-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; font-weight: 600;}
         input[type="range"] { flex: 1; cursor: pointer; }
 
+        /* --- LOGIN SCREEN --- */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; z-index: 999; }
         .login-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 30px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px; }
         .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
@@ -90,6 +144,7 @@
         .modal-content ol { line-height: 1.8; font-size: 16px; padding-left: 20px; }
         .modal-content button { margin-top: 20px; width: 100%; }
 
+        /* --- PRINT REPORT --- */
         #print-report { display: none; }
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
@@ -124,7 +179,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Presentation Ready Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Advanced Physics & Math</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -195,7 +250,7 @@
 
                 <div class="card-title" style="margin-top: 20px;">Cài đặt xử lý tín hiệu</div>
                 <div class="slider-container">
-                    <span>Độ mượt:</span>
+                    <span>Độ mượt hiển thị:</span>
                     <input type="range" id="smooth-slider" min="0" max="95" value="70" oninput="updateSmoothing()">
                     <span id="smooth-val">70%</span>
                 </div>
@@ -273,7 +328,6 @@
         let dataGround = [], dataBuilding = [];
         let gravityG = {x: 0, y: 0, z: 0, initialized: false}, gravityB = {x: 0, y: 0, z: 0, initialized: false};
         
-        let alpha = 0.95; 
         let smoothAlpha = 0.7; 
         let alertThreshold = 5.0;
         
@@ -290,7 +344,6 @@
         let metronomeInterval = null, audioCtx = null;
         let isReconnecting = false;
 
-        // CẤU HÌNH CHẾ ĐỘ MÔ PHỎNG
         let isSimulating = false;
         let simulationInterval = null;
         let simTime = 0;
@@ -379,7 +432,7 @@
                     if (data.role === 'GROUND') document.getElementById('status-g').innerHTML = "🟢 GROUND: Kết nối";
                     if (data.role === 'BUILDING') document.getElementById('status-b').innerHTML = "🟢 BUILDING: Kết nối";
                 }
-                if (data.type === 'sensor-data' && !isSimulating) processSensorData(data); // Bỏ qua dữ liệu thật nếu đang mô phỏng
+                if (data.type === 'sensor-data' && !isSimulating) processSensorData(data); 
             };
 
             ws.onclose = () => {
@@ -391,7 +444,6 @@
             };
         }
 
-        // --- TÍNH NĂNG MỚI: CHẾ ĐỘ MÔ PHỎNG ---
         function toggleSimulation() {
             let btn = document.getElementById('btn-simulate');
             if (isSimulating) {
@@ -408,10 +460,8 @@
                 document.getElementById('status-g').innerHTML = "🤖 GROUND: Giả lập";
                 document.getElementById('status-b').innerHTML = "🤖 BUILDING: Giả lập";
                 
-                // Tạo dữ liệu giả lập (Sóng Sin) 20 lần/giây
                 simulationInterval = setInterval(() => {
                     simTime += 0.05;
-                    // Tần số giả lập ~ 1.2 Hz
                     let gX = Math.sin(simTime * 2 * Math.PI * 1.2) * 0.5 + (Math.random()*0.1 - 0.05);
                     let gY = Math.cos(simTime * 2 * Math.PI * 1.2) * 0.3 + (Math.random()*0.1 - 0.05);
                     let gZ = 9.81; 
@@ -509,13 +559,28 @@
             }
         }
 
+        // NÂNG CẤP 1: BỘ LỌC THÔNG MINH BÓC TRỌNG LỰC
         function applyHighPass(raw, state) {
-            if (!state.initialized) { state.x = raw.x; state.y = raw.y; state.z = raw.z; state.initialized = true; }
-            let fx = raw.x - state.x, fy = raw.y - state.y, fz = raw.z - state.z;
-            state.x = alpha * state.x + (1 - alpha) * raw.x;
-            state.y = alpha * state.y + (1 - alpha) * raw.y;
-            state.z = alpha * state.z + (1 - alpha) * raw.z;
-            return { x: fx, y: fy, z: fz, mag: Math.sqrt(fx*fx + fy*fy + fz*fz) };
+            if (!state.initialized) { 
+                state.x = raw.x; state.y = raw.y; state.z = raw.z; 
+                state.initialized = true; 
+            }
+            
+            // Bộ lọc thông thấp (Low-pass filter) để ước lượng trọng lực (rất mượt)
+            const alphaLP = 0.95; 
+            state.x = alphaLP * state.x + (1 - alphaLP) * raw.x;
+            state.y = alphaLP * state.y + (1 - alphaLP) * raw.y;
+            state.z = alphaLP * state.z + (1 - alphaLP) * raw.z;
+            
+            // Gia tốc dao động = Tín hiệu thô - Trọng lực ước lượng
+            let fx = raw.x - state.x;
+            let fy = raw.y - state.y;
+            let fz = raw.z - state.z;
+            
+            return { 
+                x: fx, y: fy, z: fz, 
+                mag: Math.sqrt(fx*fx + fy*fy + fz*fz) 
+            };
         }
 
         function processSensorData(data) {
@@ -566,16 +631,53 @@
             return (max - min) / 2;
         }
 
+        // NÂNG CẤP 2: THUẬT TOÁN FFT TÌM TẦN SỐ TRỘI
         function calculateFrequency(data, fs) {
-            if (data.length < 50) return 0;
-            let recent = data.slice(-100);
-            let mean = recent.reduce((a, b) => a + b, 0) / recent.length;
-            let crossings = 0;
-            for (let i = 1; i < recent.length; i++) {
-                if ((recent[i-1] - mean) < 0 && (recent[i] - mean) >= 0) crossings++;
+            if (data.length < 64) return 0;
+            let N = 64; 
+            let recent = data.slice(-N);
+            
+            let mean = recent.reduce((a, b) => a + b, 0) / N;
+            let signal = recent.map(v => v - mean);
+            
+            function fft(re, im) {
+                let n = re.length;
+                for (let i = 1, j = 0; i < n; i++) {
+                    let bit = n >> 1;
+                    for (; j & bit; bit >>= 1) j ^= bit;
+                    j ^= bit;
+                    if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+                }
+                for (let len = 2; len <= n; len <<= 1) {
+                    let ang = -2 * Math.PI / len;
+                    let wlenRe = Math.cos(ang), wlenIm = Math.sin(ang);
+                    for (let i = 0; i < n; i += len) {
+                        let wRe = 1, wIm = 0;
+                        for (let j = 0; j < len / 2; j++) {
+                            let uRe = re[i+j], uIm = im[i+j];
+                            let vRe = re[i+j+len/2] * wRe - im[i+j+len/2] * wIm;
+                            let vIm = re[i+j+len/2] * wIm + im[i+j+len/2] * wRe;
+                            re[i+j] = uRe + vRe; im[i+j] = uIm + vIm;
+                            re[i+j+len/2] = uRe - vRe; im[i+j+len/2] = uIm - vIm;
+                            let nextWRe = wRe * wlenRe - wIm * wlenIm;
+                            wIm = wRe * wlenIm + wIm * wlenRe; wRe = nextWRe;
+                        }
+                    }
+                }
             }
-            let f = crossings / (recent.length / fs);
-            return (f > 0.5 && f < 10) ? f : 0;
+            
+            let re = [...signal];
+            let im = new Array(N).fill(0);
+            fft(re, im);
+            
+            let maxMag = 0, peakIndex = 0;
+            for (let i = 1; i < N / 2; i++) {
+                let mag = Math.sqrt(re[i]*re[i] + im[i]*im[i]);
+                if (mag > maxMag) { maxMag = mag; peakIndex = i; }
+            }
+            
+            let peakFreq = (peakIndex * fs) / N;
+            return (peakFreq > 0.5 && peakFreq < 10) ? peakFreq : 0;
         }
 
         function updateLivePhysics() {
@@ -773,9 +875,20 @@
             return { x: (canvas3d.width / 2) + x2 * scale, y: (canvas3d.height / 2) + y1 * scale, scale: scale };
         }
 
+        // NÂNG CẤP 3: THÊM LƯỚI NỀN 3D
         function draw3D() {
             ctx3d.clearRect(0, 0, canvas3d.width, canvas3d.height);
             drawAxis3D();
+
+            // Vẽ lưới nền mờ để tạo không gian
+            ctx3d.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx3d.lineWidth = 1;
+            for(let i = -2; i <= 2; i+=0.5) {
+                let p1 = project3D(i, -2, 0); let p2 = project3D(i, 2, 0);
+                if(p1 && p2) { ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y); ctx3d.stroke(); }
+                let p3 = project3D(-2, i, 0); let p4 = project3D(2, i, 0);
+                if(p3 && p4) { ctx3d.beginPath(); ctx3d.moveTo(p3.x, p3.y); ctx3d.lineTo(p4.x, p4.y); ctx3d.stroke(); }
+            }
 
             if (trail.length > 1) {
                 ctx3d.beginPath();
