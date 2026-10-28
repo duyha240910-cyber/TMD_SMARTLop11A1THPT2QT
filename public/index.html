@@ -281,7 +281,8 @@
 
         const canvas3d = document.getElementById('canvas3d'), ctx3d = canvas3d.getContext('2d');
         let angleX = -0.5, angleY = 0.5, trail = [];
-        const maxTrail = 50, scale3D = 40;
+        const maxTrail = 50;
+        const scale3D = 300; // TĂNG HỆ SỐ PHÓNG ĐẠI LÊN 300 ĐỂ DỄ NHÌN
         let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
 
         let metronomeInterval = null, audioCtx = null;
@@ -291,7 +292,6 @@
         let simulationInterval = null;
         let simTime = 0;
 
-        // BIẾN CHỐNG LAG
         let lastChartUpdate = 0;
         let lastPhysicsUpdate = 0;
 
@@ -352,14 +352,18 @@
                 width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
             });
 
-            resizeCanvas();
+            // TRÌ HOÃN RESIZE VÀ DRAW 3D ĐỂ ĐẢM BẢO DOM ĐÃ SẴN SÀNG
+            setTimeout(() => {
+                resizeCanvas();
+                requestAnimationFrame(draw3D);
+            }, 200);
+            
             window.addEventListener('resize', resizeCanvas);
 
             connectWebSocket();
             initChart();
             updateDropdowns();
             updatePendulum();
-            requestAnimationFrame(draw3D);
         }
 
         function connectWebSocket() {
@@ -543,7 +547,7 @@
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.data.datasets[1].data.push(smoothMag); // FIX LỖI TYPO TẠI ĐÂY (Thêm chữ data)
+                    chart.data.datasets[1].data.push(smoothMag); // FIX TYPO
                     
                     smooth3D.x = smooth3D.x * smoothAlpha + f.x * (1 - smoothAlpha);
                     smooth3D.y = smooth3D.y * smoothAlpha + f.y * (1 - smoothAlpha);
@@ -562,7 +566,6 @@
                 if (chart.data.labels.length > 250) {
                     chart.data.labels.shift(); chart.data.datasets[0].data.shift(); chart.data.datasets[1].data.shift();
                 }
-                // TỐI ƯU HÓA: Chỉ vẽ đồ thị 25 lần/giây để chống lag
                 let now = Date.now();
                 if (now - lastChartUpdate > 40) {
                     chart.update('none');
@@ -570,7 +573,6 @@
                 }
             }
 
-            // TỐI ƯU HÓA: Chỉ tính toán FFT 4 lần/giây
             if (Date.now() - lastPhysicsUpdate > 250) {
                 updateLivePhysics();
                 lastPhysicsUpdate = Date.now();
@@ -866,9 +868,9 @@
 
         function drawAxis3D() {
             let origin = project3D(0, 0, 0);
-            let xAxis = project3D(2, 0, 0);
-            let yAxis = project3D(0, 2, 0);
-            let zAxis = project3D(0, 0, 2);
+            let xAxis = project3D(0.5, 0, 0);
+            let yAxis = project3D(0, 0.5, 0);
+            let zAxis = project3D(0, 0, 0.5);
 
             if (origin && xAxis) { ctx3d.beginPath(); ctx3d.moveTo(origin.x, origin.y); ctx3d.lineTo(xAxis.x, xAxis.y); ctx3d.strokeStyle = '#ef4444'; ctx3d.lineWidth = 2; ctx3d.stroke(); }
             if (origin && yAxis) { ctx3d.beginPath(); ctx3d.moveTo(origin.x, origin.y); ctx3d.lineTo(yAxis.x, yAxis.y); ctx3d.strokeStyle = '#10b981'; ctx3d.lineWidth = 2; ctx3d.stroke(); }
@@ -884,7 +886,11 @@
 
         function resizeCanvas() {
             let box = document.getElementById('canvas3d-container');
-            canvas3d.width = box.clientWidth - 20; canvas3d.height = box.clientHeight - 20;
+            if (box.clientWidth === 0 || box.clientHeight === 0) {
+                canvas3d.width = 800; canvas3d.height = 400;
+            } else {
+                canvas3d.width = box.clientWidth - 20; canvas3d.height = box.clientHeight - 20;
+            }
         }
 
         function exportLocalCSV() {
