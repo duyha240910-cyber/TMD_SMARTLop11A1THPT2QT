@@ -3,61 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>TMD SMART - Ultimate Dashboard</title>
-    <!-- Thư viện vẽ đồ thị 2D -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Thư viện tạo mã QR -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <!-- Font chữ -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #f4f7f6; 
-            --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            --card-bg: rgba(255, 255, 255, 0.85); 
-            --text-main: #1e293b; 
-            --text-muted: #64748b;
-            --border-color: #e2e8f0; 
-            --primary: #4f46e5; 
-            --ground-color: #3b82f6; 
-            --building-color: #ef4444;
+            --bg: #f4f7f6; --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            --card-bg: rgba(255, 255, 255, 0.85); --text-main: #1e293b; --text-muted: #64748b;
+            --border-color: #e2e8f0; --primary: #4f46e5; --ground-color: #3b82f6; --building-color: #ef4444;
         }
         body.dark-mode {
-            --bg: #0f172a; 
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.85); 
-            --text-main: #f8fafc; 
-            --text-muted: #94a3b8;
-            --border-color: #334155; 
-            --primary: #818cf8;
+            --bg: #0f172a; --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.85); --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border-color: #334155; --primary: #818cf8;
         }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main); margin: 0; padding: 20px; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+        body.alert-mode { background: linear-gradient(135deg, #fecaca 0%, #f87171 100%); animation: pulseBg 0.5s infinite alternate; }
+        @keyframes pulseBg { from { filter: brightness(1); } to { filter: brightness(0.9); } }
 
-        body {
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-gradient); 
-            color: var(--text-main);
-            margin: 0; 
-            padding: 20px; 
-            min-height: 100vh; 
-            transition: background 0.3s, color 0.3s;
-        }
-
-        body.alert-mode {
-            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
-            animation: pulseBg 0.5s infinite alternate;
-        }
-        @keyframes pulseBg {
-            from { filter: brightness(1); }
-            to { filter: brightness(0.9); }
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: auto;
-            transition: max-width 0.3s;
-        }
-
-        /* --- CHẾ ĐỘ TRÌNH CHIẾU --- */
+        .container { max-width: 1400px; margin: auto; transition: max-width 0.3s; }
+        
         body.presentation-mode .no-print { display: none !important; }
         body.presentation-mode .container { max-width: 1800px; }
         body.presentation-mode .grid-layout { grid-template-columns: 1fr 1fr; }
@@ -66,27 +32,15 @@
         body.presentation-mode .metric-value { font-size: 48px; }
         body.presentation-mode .card-title { font-size: 24px; }
 
-        /* --- HEADER --- */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            padding: 15px 30px; border-radius: 20px; border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: 1px;}
         .room-badge { background: #fef08a; color: #854d0e; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 18px;}
 
-        /* --- GRID LAYOUT --- */
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr 350px; gap: 20px; }
-        .card {
-            background: var(--card-bg); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 25px; border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease;
-        }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0,0,0,0.05); transition: transform 0.2s ease; }
         .card:hover { transform: translateY(-2px); }
         .card-title { font-weight: 800; font-size: 16px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
 
-        /* --- METRICS --- */
         .metric-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);}
         .metric-label { font-size: 15px; color: var(--text-muted); font-weight: 600;}
         .metric-value { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; transition: color 0.3s, font-size 0.3s; }
@@ -94,13 +48,8 @@
         .val-building { color: var(--building-color); }
         .val-building.danger { color: #dc2626; text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
 
-        /* --- BUTTONS --- */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .btn {
-            padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px;
-            cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); }
         .btn-primary:hover:not(:disabled) { background: #4338ca; transform: scale(1.02); }
@@ -109,15 +58,14 @@
         .btn-export { background: #10b981; color: white; }
         .btn-metronome { background: #8b5cf6; color: white; }
         .btn-darkmode { background: #334155; color: white; }
+        .btn-simulate { background: #f59e0b; color: white; }
 
-        /* --- CHARTS & 3D --- */
         #liveChart-container { grid-column: span 2; height: 350px; position: relative; transition: height 0.3s;}
         #canvas3d-container { grid-column: span 3; height: 400px; background: #0f172a; border-radius: 20px; padding: 10px; position: relative; overflow: hidden; cursor: grab; transition: height 0.3s;}
         #canvas3d-container:active { cursor: grabbing; }
         #canvas3d { width: 100%; height: 100%; display: block;}
         .canvas-hint { position: absolute; bottom: 15px; right: 20px; color: #94a3b8; font-size: 13px; font-weight: 600; pointer-events: none;}
 
-        /* --- FORM & INPUT --- */
         .resonance-box { background: var(--bg); border-radius: 15px; padding: 20px; text-align: center; border: 2px dashed var(--border-color); transition: background 0.3s;}
         .resonance-box input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; width: 100px; text-align: center; font-weight: bold; background: var(--card-bg); color: var(--text-main);}
         .badge-res { margin-top: 15px; padding: 12px; border-radius: 12px; font-weight: 800; color: white; background: #94a3b8; font-size: 15px; transition: 0.3s;}
@@ -129,18 +77,23 @@
         .slider-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; font-weight: 600;}
         input[type="range"] { flex: 1; cursor: pointer; }
 
-        /* --- LOGIN SCREEN --- */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; z-index: 999; }
         .login-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 50px; border-radius: 30px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 400px; }
         .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
         .login-card button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 12px; background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
         .login-card button:hover { background: #4338ca; }
 
-        /* --- PRINT REPORT --- */
+        /* --- MODAL HƯỚNG DẪN --- */
+        #guide-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 20px; max-width: 600px; width: 90%; color: var(--text-main); border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.2);}
+        .modal-content h2 { color: var(--primary); margin-top: 0; }
+        .modal-content ol { line-height: 1.8; font-size: 16px; padding-left: 20px; }
+        .modal-content button { margin-top: 20px; width: 100%; }
+
         #print-report { display: none; }
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
-            .no-print, #login-screen, .header, #liveChart-container, #canvas3d-container, #compare-chart-container { display: none !important; }
+            .no-print, #login-screen, .header, #liveChart-container, #canvas3d-container, #compare-chart-container, #guide-modal { display: none !important; }
             .container { max-width: 100%; }
             .card { box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; background: white; color: black;}
             .grid-layout { display: block; }
@@ -152,11 +105,26 @@
     </style>
 </head>
 <body>
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <!-- MODAL HƯỚNG DẪN -->
+    <div id="guide-modal">
+        <div class="modal-content">
+            <h2>📖 Kịch bản Thuyết trình (Gợi ý)</h2>
+            <ol>
+                <li><b>Kết nối:</b> Mở điện thoại, quét mã QR để vào phòng. Chọn GROUND (Máy A) và BUILDING (Máy B).</li>
+                <li><b>Hiệu chuẩn:</b> Đặt điện thoại lên mô hình, bấm nút <b>"Hiệu chuẩn (Về 0)"</b> trên máy tính.</li>
+                <li><b>Đo lần 1 (Không TMD):</b> Tháo con lắc. Bấm <b>"Ghi dữ liệu"</b>. Dùng tay gõ đều vào mô hình khoảng 15s. Bấm <b>"Dừng"</b> -> Chọn "Không TMD".</li>
+                <li><b>Đo lần 2 (Có TMD):</b> Lắp con lắc. Bấm <b>"Máy đếm nhịp"</b> (Metronome) để gõ đúng tần số cộng hưởng. Bấm <b>"Ghi dữ liệu"</b> và gõ theo nhịp. Bấm <b>"Dừng"</b> -> Chọn "Có TMD".</li>
+                <li><b>Kết quả:</b> Chọn 2 phiên ở mục "So sánh hiệu quả", bấm <b>"Tính toán"</b>. Hệ thống sẽ hiện % giảm chấn.</li>
+                <li><b>In ấn:</b> Bấm <b>"In / Xuất PDF Báo Cáo"</b> để nộp cho Ban giám khảo.</li>
+            </ol>
+            <button class="btn btn-primary" onclick="document.getElementById('guide-modal').style.display='none'">Đã hiểu, Bắt đầu!</button>
+        </div>
+    </div>
+
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Voice Assistant Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Presentation Ready Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -166,16 +134,22 @@
         <div class="header no-print">
             <h1>TMD SMART LAB</h1>
             <div>
-                <span id="status-g" style="font-weight:bold; color:#64748b; margin-right: 15px;">GROUND: Chờ...</span>
-                <span id="status-b" style="font-weight:bold; color:#64748b; margin-right: 15px;">BUILDING: Chờ...</span>
-                <span class="room-badge">Phòng: <span id="display-room"></span></span>
-                <button class="btn btn-darkmode" onclick="toggleDarkMode()" style="padding: 8px 12px; margin-left: 10px;">🌙 Nền</button>
+                <button class="btn btn-simulate" onclick="toggleSimulation()" id="btn-simulate" style="padding: 8px 12px; margin-right: 10px;">🧪 Chế độ Mô phỏng</button>
+                <button class="btn btn-darkmode" onclick="document.getElementById('guide-modal').style.display='flex'" style="padding: 8px 12px; margin-right: 10px; background:#f59e0b;">📖 Hướng dẫn</button>
+                <button class="btn btn-darkmode" onclick="toggleDarkMode()" style="padding: 8px 12px; margin-right: 10px;">🌙 Nền</button>
                 <button class="btn btn-primary" onclick="togglePresentation()" style="padding: 8px 12px;">📺 Trình chiếu</button>
             </div>
         </div>
 
+        <div class="header no-print" style="padding: 10px 30px; margin-top: -15px;">
+            <div>
+                <span id="status-g" style="font-weight:bold; color:#64748b; margin-right: 15px;">GROUND: Chờ...</span>
+                <span id="status-b" style="font-weight:bold; color:#64748b; margin-right: 15px;">BUILDING: Chờ...</span>
+                <span class="room-badge">Phòng: <span id="display-room"></span></span>
+            </div>
+        </div>
+
         <div class="grid-layout">
-            <!-- BẢNG GROUND -->
             <div class="card">
                 <div class="card-title">Mặt đất (Ground)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-ground" id="g-amp">0.000</span></div>
@@ -183,7 +157,6 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-ground" id="g-period">0.00</span></div>
             </div>
 
-            <!-- BẢNG BUILDING -->
             <div class="card" style="border-left: 4px solid var(--building-color);">
                 <div class="card-title">Tòa nhà (Building)</div>
                 <div class="metric-row"><span class="metric-label">Biên độ A</span><span class="metric-value val-building" id="b-amp">0.000</span></div>
@@ -191,7 +164,6 @@
                 <div class="metric-row" style="border:none;"><span class="metric-label">Chu kỳ T</span><span class="metric-value val-building" id="b-period">0.00</span></div>
             </div>
 
-            <!-- TRẠM KẾT NỐI -->
             <div class="card no-print">
                 <div class="card-title">Trạm kết nối & Con lắc</div>
                 <div id="qrcode-box"></div>
@@ -205,12 +177,10 @@
                 </div>
             </div>
 
-            <!-- ĐỒ THỊ 2D -->
             <div class="card" id="liveChart-container">
                 <canvas id="liveChart"></canvas>
             </div>
 
-            <!-- BẢNG ĐIỀU KHIỂN -->
             <div class="card no-print">
                 <div class="btn-group">
                     <button class="btn btn-primary" id="btn-record" onclick="startRecord()">Ghi dữ liệu</button>
@@ -252,21 +222,16 @@
                 <button class="btn btn-primary" onclick="window.print()" style="width: 100%; background:#64748b; margin-top: 10px;">In / Xuất PDF Báo Cáo</button>
             </div>
 
-            <!-- KẾT QUẢ SO SÁNH -->
             <div class="card" id="compare-result" style="display:none; grid-column: span 2;"></div>
-            
-            <!-- ĐỒ THỊ CHỒNG -->
             <div class="card" id="compare-chart-container" style="display:none; grid-column: span 3; height: 300px; position:relative;">
                 <canvas id="overlayChart"></canvas>
             </div>
 
-            <!-- ĐỒ THỊ 3D -->
             <div class="card no-print" id="canvas3d-container">
                 <canvas id="canvas3d"></canvas>
                 <div class="canvas-hint no-print">Giữ chuột trái để xoay không gian 3D</div>
             </div>
 
-            <!-- KHUNG BÁO CÁO IN PDF -->
             <div id="print-report">
                 <div class="print-header">
                     <h2>BÁO CÁO THÍ NGHIỆM VẬT LÝ 11 - TMD SMART</h2>
@@ -283,9 +248,7 @@
                             <th>Chu kỳ T (s)</th>
                         </tr>
                     </thead>
-                    <tbody id="print-table-body">
-                        <!-- Dữ liệu sẽ được điền tự động bằng JS -->
-                    </tbody>
+                    <tbody id="print-table-body"></tbody>
                 </table>
                 <br>
                 <p><b>3. Kết luận:</b> <span id="print-conclusion" style="font-weight: bold; font-size: 18px; color: #dc2626;"></span></p>
@@ -301,7 +264,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -311,30 +273,30 @@
         let dataGround = [], dataBuilding = [];
         let gravityG = {x: 0, y: 0, z: 0, initialized: false}, gravityB = {x: 0, y: 0, z: 0, initialized: false};
         
-        // Cấu hình bộ lọc
         let alpha = 0.95; 
         let smoothAlpha = 0.7; 
         let alertThreshold = 5.0;
         
         let lastTimestamp = 0, calculatedSampleRate = 30;
         let isAlerting = false;
-        let isResonanceSpoken = false; // Biến chống nói lặp lại liên tục
+        let isResonanceSpoken = false;
         const beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
-        // Cấu hình 3D
         const canvas3d = document.getElementById('canvas3d'), ctx3d = canvas3d.getContext('2d');
         let angleX = -0.5, angleY = 0.5, trail = [];
         const maxTrail = 50, scale3D = 40;
         let smooth3D = {x: 0, y: 0, z: 0}, smoothMag = 0;
 
-        // Cấu hình kết nối & metronome
         let metronomeInterval = null, audioCtx = null;
         let isReconnecting = false;
 
-        // --- TÍNH NĂNG MỚI: HÀM PHÁT ÂM THANH TIẾNG VIỆT ---
+        // CẤU HÌNH CHẾ ĐỘ MÔ PHỎNG
+        let isSimulating = false;
+        let simulationInterval = null;
+        let simTime = 0;
+
         function speak(text) {
             if ('speechSynthesis' in window) {
-                // Hủy các câu đang nói dở để không bị đè âm thanh
                 window.speechSynthesis.cancel(); 
                 let msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'vi-VN';
@@ -417,7 +379,7 @@
                     if (data.role === 'GROUND') document.getElementById('status-g').innerHTML = "🟢 GROUND: Kết nối";
                     if (data.role === 'BUILDING') document.getElementById('status-b').innerHTML = "🟢 BUILDING: Kết nối";
                 }
-                if (data.type === 'sensor-data') processSensorData(data);
+                if (data.type === 'sensor-data' && !isSimulating) processSensorData(data); // Bỏ qua dữ liệu thật nếu đang mô phỏng
             };
 
             ws.onclose = () => {
@@ -427,6 +389,41 @@
                 document.getElementById('status-b').innerHTML = "🔴 BUILDING: Mất mạng";
                 setTimeout(connectWebSocket, 3000);
             };
+        }
+
+        // --- TÍNH NĂNG MỚI: CHẾ ĐỘ MÔ PHỎNG ---
+        function toggleSimulation() {
+            let btn = document.getElementById('btn-simulate');
+            if (isSimulating) {
+                clearInterval(simulationInterval);
+                isSimulating = false;
+                btn.innerText = "🧪 Chế độ Mô phỏng";
+                btn.style.background = "#f59e0b";
+                document.getElementById('status-g').innerHTML = "🟢 GROUND: Kết nối";
+                document.getElementById('status-b').innerHTML = "🟢 BUILDING: Kết nối";
+            } else {
+                isSimulating = true;
+                btn.innerText = "⏹ Tắt Mô phỏng";
+                btn.style.background = "#ef4444";
+                document.getElementById('status-g').innerHTML = "🤖 GROUND: Giả lập";
+                document.getElementById('status-b').innerHTML = "🤖 BUILDING: Giả lập";
+                
+                // Tạo dữ liệu giả lập (Sóng Sin) 20 lần/giây
+                simulationInterval = setInterval(() => {
+                    simTime += 0.05;
+                    // Tần số giả lập ~ 1.2 Hz
+                    let gX = Math.sin(simTime * 2 * Math.PI * 1.2) * 0.5 + (Math.random()*0.1 - 0.05);
+                    let gY = Math.cos(simTime * 2 * Math.PI * 1.2) * 0.3 + (Math.random()*0.1 - 0.05);
+                    let gZ = 9.81; 
+                    
+                    let bX = Math.sin(simTime * 2 * Math.PI * 1.2) * 3.5 + (Math.random()*0.5 - 0.25);
+                    let bY = Math.cos(simTime * 2 * Math.PI * 1.2) * 2.0 + (Math.random()*0.5 - 0.25);
+                    let bZ = 9.81;
+
+                    processSensorData({ role: 'GROUND', t: performance.now(), x: gX, y: gY, z: gZ });
+                    processSensorData({ role: 'BUILDING', t: performance.now(), x: bX, y: bY, z: bZ });
+                }, 50);
+            }
         }
 
         function toggleMetronome() {
@@ -502,11 +499,10 @@
             if (diffPercent < 0.15) {
                 badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!"; badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
                 
-                // --- GỌI GIỌNG NÓI KHI CỘNG HƯỞNG ---
                 if (!isResonanceSpoken) {
                     speak("Chúc mừng! Đã đạt cộng hưởng.");
                     isResonanceSpoken = true;
-                    setTimeout(() => { isResonanceSpoken = false; }, 5000); // 5 giây sau mới được nói lại
+                    setTimeout(() => { isResonanceSpoken = false; }, 5000);
                 }
             } else {
                 badge.innerText = "CHƯA CỘNG HƯỞNG"; badge.style.background = "#ef4444"; badge.style.boxShadow = "none";
@@ -542,7 +538,7 @@
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.datasets[1].data.push(smoothMag); // ĐÃ SỬA LỖI TYPO TẠI ĐÂY
+                    chart.datasets[1].data.push(smoothMag); 
                     
                     smooth3D.x = smooth3D.x * smoothAlpha + f.x * (1 - smoothAlpha);
                     smooth3D.y = smooth3D.y * smoothAlpha + f.y * (1 - smoothAlpha);
@@ -599,8 +595,6 @@
                     document.body.classList.add('alert-mode'); 
                     document.getElementById('b-amp').classList.add('danger'); 
                     beepAudio.play(); 
-                    
-                    // --- GỌI GIỌNG NÓI KHI CẢNH BÁO RUNG MẠNH ---
                     speak("Cảnh báo! Tòa nhà dao động quá mạnh.");
                 }
             } else {
@@ -651,15 +645,19 @@
             localStorage.setItem('tmd_sessions_' + currentRoom, JSON.stringify(saved));
             updateDropdowns();
             
-            try {
-                let res = await fetch('/api/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ GROUND: dataGround, BUILDING: dataBuilding })
-                });
-                let result = await res.json();
-                if(result.ok) { alert("Đã lưu phiên đo và tạo file CSV trên máy chủ!"); }
-            } catch (e) { console.log("Lỗi lưu file lên server."); }
+            if (!isSimulating) {
+                try {
+                    let res = await fetch('/api/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ GROUND: dataGround, BUILDING: dataBuilding })
+                    });
+                    let result = await res.json();
+                    if(result.ok) { alert("Đã lưu phiên đo và tạo file CSV trên máy chủ!"); }
+                } catch (e) { console.log("Lỗi lưu file lên server."); }
+            } else {
+                alert("Đã lưu dữ liệu Mô phỏng vào bộ nhớ tạm.");
+            }
         }
 
         function deleteSession() {
