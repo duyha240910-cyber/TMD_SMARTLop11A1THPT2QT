@@ -156,7 +156,7 @@
     <div id="login-screen">
         <div class="login-card">
             <h1 style="margin-top:0; font-size: 36px; color: #818cf8;">TMD SMART</h1>
-            <p style="color: #c7d2fe; margin-bottom: 30px;">Final Ultimate Version</p>
+            <p style="color: #c7d2fe; margin-bottom: 30px;">Voice Assistant Version</p>
             <input type="text" id="input-room" placeholder="MÃ PHÒNG" maxlength="6" autocomplete="off">
             <button onclick="joinRoom()">BẮT ĐẦU KẾT NỐI</button>
         </div>
@@ -231,7 +231,6 @@
                 </div>
                 <div class="slider-container">
                     <span>Ngưỡng báo động:</span>
-                    <!-- ĐÃ THÊM SỰ KIỆN ONINPUT ĐỂ SỬA LỖI BỊ ĂN MẤT CODE -->
                     <input type="number" id="threshold-input" value="5.0" step="0.5" oninput="updateThreshold()" style="width: 60px; padding: 5px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main);">
                     <span>m/s²</span>
                 </div>
@@ -267,7 +266,7 @@
                 <div class="canvas-hint no-print">Giữ chuột trái để xoay không gian 3D</div>
             </div>
 
-            <!-- KHUNG BÁO CÁO IN PDF (ẨN TRÊN WEB, CHỈ HIỆN KHI IN) -->
+            <!-- KHUNG BÁO CÁO IN PDF -->
             <div id="print-report">
                 <div class="print-header">
                     <h2>BÁO CÁO THÍ NGHIỆM VẬT LÝ 11 - TMD SMART</h2>
@@ -319,6 +318,7 @@
         
         let lastTimestamp = 0, calculatedSampleRate = 30;
         let isAlerting = false;
+        let isResonanceSpoken = false; // Biến chống nói lặp lại liên tục
         const beepAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
         // Cấu hình 3D
@@ -330,6 +330,18 @@
         // Cấu hình kết nối & metronome
         let metronomeInterval = null, audioCtx = null;
         let isReconnecting = false;
+
+        // --- TÍNH NĂNG MỚI: HÀM PHÁT ÂM THANH TIẾNG VIỆT ---
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                // Hủy các câu đang nói dở để không bị đè âm thanh
+                window.speechSynthesis.cancel(); 
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'vi-VN';
+                msg.rate = 1.0; 
+                window.speechSynthesis.speak(msg);
+            }
+        }
 
         window.onload = () => {
             let savedRoom = localStorage.getItem('tmd_last_room');
@@ -358,7 +370,6 @@
             smoothAlpha = val / 100;
         }
 
-        // HÀM ĐÃ BỊ THIẾU SỰ KIỆN KẾT NỐI TRONG BẢN TRƯỚC, GIỜ ĐÃ KHÔI PHỤC
         function updateThreshold() {
             alertThreshold = parseFloat(document.getElementById('threshold-input').value) || 5.0;
         }
@@ -490,6 +501,13 @@
 
             if (diffPercent < 0.15) {
                 badge.innerText = "ĐÃ ĐẠT CỘNG HƯỞNG!"; badge.style.background = "#10b981"; badge.style.boxShadow = "0 0 15px #10b981";
+                
+                // --- GỌI GIỌNG NÓI KHI CỘNG HƯỞNG ---
+                if (!isResonanceSpoken) {
+                    speak("Chúc mừng! Đã đạt cộng hưởng.");
+                    isResonanceSpoken = true;
+                    setTimeout(() => { isResonanceSpoken = false; }, 5000); // 5 giây sau mới được nói lại
+                }
             } else {
                 badge.innerText = "CHƯA CỘNG HƯỞNG"; badge.style.background = "#ef4444"; badge.style.boxShadow = "none";
             }
@@ -524,7 +542,7 @@
                 
                 if (!isPaused) { 
                     chart.data.datasets[0].data.push(null); 
-                    chart.data.datasets[1].data.push(smoothMag);
+                    chart.datasets[1].data.push(smoothMag); // ĐÃ SỬA LỖI TYPO TẠI ĐÂY
                     
                     smooth3D.x = smooth3D.x * smoothAlpha + f.x * (1 - smoothAlpha);
                     smooth3D.y = smooth3D.y * smoothAlpha + f.y * (1 - smoothAlpha);
@@ -576,9 +594,21 @@
             document.getElementById('b-period').innerText = fB > 0 ? (1/fB).toFixed(2) : "0.00";
 
             if (aB > alertThreshold) {
-                if (!isAlerting) { isAlerting = true; document.body.classList.add('alert-mode'); document.getElementById('b-amp').classList.add('danger'); beepAudio.play(); }
+                if (!isAlerting) { 
+                    isAlerting = true; 
+                    document.body.classList.add('alert-mode'); 
+                    document.getElementById('b-amp').classList.add('danger'); 
+                    beepAudio.play(); 
+                    
+                    // --- GỌI GIỌNG NÓI KHI CẢNH BÁO RUNG MẠNH ---
+                    speak("Cảnh báo! Tòa nhà dao động quá mạnh.");
+                }
             } else {
-                if (isAlerting) { isAlerting = false; document.body.classList.remove('alert-mode'); document.getElementById('b-amp').classList.remove('danger'); }
+                if (isAlerting) { 
+                    isAlerting = false; 
+                    document.body.classList.remove('alert-mode'); 
+                    document.getElementById('b-amp').classList.remove('danger'); 
+                }
             }
             checkResonance();
         }
